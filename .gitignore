@@ -1,0 +1,7 @@
+*.DS_Store
+*.code-workspace
+.env
+.pytest_cache/
+.python-version
+.vscode/*
+__pycache__/
