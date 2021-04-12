@@ -1,7 +1,8 @@
 *.DS_Store
 *.code-workspace
-.env
+.env.json
 .pytest_cache/
 .python-version
 .vscode/*
 __pycache__/
+.aws-sam

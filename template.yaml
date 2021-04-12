@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: |
   The SAM Template for Deep Frying Tweets. Extra Crispy.
@@ -9,26 +9,25 @@ Description: |
 #     Timeout: 3
 
 Resources:
-  HelloWorldFunction:
+  DeepFriedTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      TableName: deep-fried-table
+      ProvisionedThroughput:
+        ReadCapacityUnits: 2
+        WriteCapacityUnits: 2
+
+  ProcessMentionsFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: hello_world/
-      Handler: app.lambda_handler
+      CodeUri: twitter_py/
+      Handler: app.process_mentions
       Runtime: python3.8
-      Events:
-        HelloWorld:
-          Type: Api
-          Properties:
-            Path: /hello
-            Method: get
+      Environment:
+        Variables:
+          DEEP_FRIED_TABLE: !Ref DeepFriedTable
 
 Outputs:
-  HelloWorldApi:
-    Description: "API Gateway endpoint URL for Prod stage for Hello World function"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
-  HelloWorldFunction:
-    Description: "Hello World Lambda Function ARN"
-    Value: !GetAtt HelloWorldFunction.Arn
-  HelloWorldFunctionIamRole:
-    Description: "Implicit IAM Role created for Hello World function"
-    Value: !GetAtt HelloWorldFunctionRole.Arn
+  DeepFriedTable:
+    Description: Deep Fried Table ID
+    Value: !Ref DeepFriedTable

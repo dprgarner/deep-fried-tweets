@@ -25,19 +25,28 @@ Get the table Physical ID:
 aws cloudformation describe-stack-resource --stack-name deepfriedtweets --logical-resource-id DeepFriedTable
 ```
 
-Add to the env, and run the lambda directly:
+Add to the .env.json file:
+
+```json
+{
+  "Parameters": {
+    "DEEP_FRIED_TABLE": "deep-fried-table",
+    "TWITTER_API_KEY": "aaaaaaaaaaaaa",
+    "TWITTER_API_SECRET_KEY": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "TWITTER_BEARER_TOKEN": "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"
+  }
+}
+```
+
+...and invoke the Lambda function:
 
 ```bash
-GAMES_TABLE=deepfriedtweets-DeepFriedTable-AAAAAAAA sam local invoke MutationAddMessageFunction --event events/addMessage.json
+sam local invoke MutationAddMessageFunction --env-vars .env.json --event events/addMessage.json
 ```
 
 This will run the built version of the lambda in `./aws-sam`.
 
-To avoid having to build on small lambda changes, first delete the build directory:
-
-```
-rm -rf ./aws-sam
-```
+The lambda function will need to be rebuilt each time with `sam build --use-container`.
 
 ## Tests
 
