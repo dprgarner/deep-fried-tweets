@@ -4,9 +4,11 @@ Description: |
   The SAM Template for Deep Frying Tweets. Extra Crispy.
 
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
-# Globals:
-#   Function:
-#     Timeout: 3
+Globals:
+  Function:
+    Environment:
+      Variables:
+        DEEP_FRIED_TABLE: !Ref DeepFriedTable
 
 Resources:
   DeepFriedTable:
@@ -23,9 +25,21 @@ Resources:
       CodeUri: twitter_py/
       Handler: app.process_mentions
       Runtime: python3.8
-      Environment:
-        Variables:
-          DEEP_FRIED_TABLE: !Ref DeepFriedTable
+      Policies:
+        - DynamoDBCrudPolicy:
+          TableName: !Ref DeepFriedTable
+        # - LambdaInvokePolicy:
+        #   FunctionName: !Ref ScreenshotTweetFunction
+
+  # ScreenshotTweetFunction:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     CodeUri:
+  #     Handler:
+  #     Runtime:
+  #     Policies:
+  #       - DynamoDBCrudPolicy:
+  #         TableName: !Ref DeepFriedTable
 
 Outputs:
   DeepFriedTable:

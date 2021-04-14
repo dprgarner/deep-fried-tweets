@@ -1,35 +1,82 @@
 import os
-import json
+import datetime
 
-# import requests
+import tweepy
 import boto3
 
 dynamodb_client = boto3.client("dynamodb")
 
 
-def process_mentions(_event, _context):
-    """
-    Get the Twitter bot's mentions, and dispatch queue events for each of them.
-    """
-    response = dynamodb_client.get_item(
-        TableName=os.getenv("DEEP_FRIED_TABLE"), Key={"id": {"S": "last_request"}}
+def get_twitter_api():
+    twitter_auth = dynamodb_client.get_item(
+        TableName=os.getenv("DEEP_FRIED_TABLE"), Key={"id": {"S": "twitter_auth"}}
+    )["Item"]
+    auth = tweepy.OAuthHandler(
+        twitter_auth["consumer_key"]["S"], twitter_auth["consumer_secret"]["S"]
     )
+    auth.set_access_token(
+        twitter_auth["access_token"]["S"], twitter_auth["access_token_secret"]["S"]
+    )
+    return tweepy.API(auth)
 
-    print(json.dumps(response, indent=2))
-    # try:
-    #     ip = requests.get("http://checkip.amazonaws.com/")
-    # except requests.RequestException as e:
-    #     # Send some context about this error to Lambda Logs
-    #     print(e)
 
-    #     raise e
+twitter_api = get_twitter_api()
+
+
+def _find_tweet_focus(status):
+    if hasattr(status, "in_reply_to_screen_name"):
+        target_id = status.in_reply_to_status_id_str
+        target_url = "https://mobile.twitter.com/{}/status/{}".format(
+            status.in_reply_to_screen_name, status.in_reply_to_status_id_str
+        )
+    else:
+        target_id = status.id_str
+        target_url = "https://mobile.twitter.com/{}/status/{}".format(
+            status.user.screen_name, status.id_str
+        )
 
     return {
-        "statusCode": 200,
-        "body": json.dumps(
-            {
-                "message": "hello.",
-                # "location": ip.text.replace("\n", "")
-            }
-        ),
+        "mention_id": status.id_str,
+        "target_id": target_id,
+        "target_url": target_url,
     }
+
+
+def process_mentions(_event, _context):
+    """
+    Get the Twitter bot's mentions, and execute lambda handler events for each of them.
+    """
+    last_request = dynamodb_client.get_item(
+        TableName=os.getenv("DEEP_FRIED_TABLE"), Key={"id": {"S": "last_request"}}
+    )
+    since_id = last_request.get("Item", {}).get("since_id", {}).get("S")
+
+    statuses = tweepy.Cursor(
+        twitter_api.mentions_timeline,
+        since_id=since_id,
+        trim_user=True,
+        include_entities=False,
+    ).items()
+    try:
+        for status in reversed(list(statuses)):
+            # Invoke a lambda to process it, here.
+            print("Processing tweet:", _find_tweet_focus(status.id_str))
+            since_id = status.id_str
+    finally:
+        current_time = (
+            datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc).isoformat()
+        )
+        dynamodb_client.update_item(
+            TableName=os.getenv("DEEP_FRIED_TABLE"),
+            Key={"id": {"S": "last_request"}},
+            AttributeUpdates={
+                "since_id": {
+                    "Value": {"S": since_id},
+                    "Action": "PUT",
+                },
+                "datetime": {
+                    "Value": {"S": current_time},
+                    "Action": "PUT",
+                },
+            },
+        )
