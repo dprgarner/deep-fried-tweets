@@ -8,7 +8,7 @@ Globals:
   Function:
     Environment:
       Variables:
-        DEEP_FRIED_TABLE: !Ref DeepFriedTable
+        TABLE_NAME: !Ref DeepFriedTable
 
 Resources:
   DeepFriedTable:
@@ -27,21 +27,43 @@ Resources:
       Runtime: python3.8
       Policies:
         - DynamoDBCrudPolicy:
-          TableName: !Ref DeepFriedTable
+            TableName: !Ref DeepFriedTable
         # - LambdaInvokePolicy:
-        #   FunctionName: !Ref ScreenshotTweetFunction
+        #     FunctionName: !Ref ScreenshotTweetFunction
 
-  # ScreenshotTweetFunction:
-  #   Type: AWS::Serverless::Function
-  #   Properties:
-  #     CodeUri:
-  #     Handler:
-  #     Runtime:
-  #     Policies:
-  #       - DynamoDBCrudPolicy:
-  #         TableName: !Ref DeepFriedTable
+  DeepFriedBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete
+    Properties:
+      BucketName: deep-fried-bucket
+
+  ScreenshotTweetLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      Description: The dependencies for the Chromium screenshot-taker
+      ContentUri: ./
+      RetentionPolicy: Delete
+
+  ScreenshotTweetFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: ./screenshot_tweet/app.handler
+      Runtime: nodejs14.x
+      Timeout: 20
+      MemorySize: 1024
+      Layers:
+        - !Ref ScreenshotTweetLayer
+      Policies:
+        - S3WritePolicy:
+            BucketName: !Ref DeepFriedBucket
+      Environment:
+        Variables:
+          BUCKET_NAME: !Ref DeepFriedBucket
 
 Outputs:
   DeepFriedTable:
     Description: Deep Fried Table ID
     Value: !Ref DeepFriedTable
+  DeepFriedBucket:
+    Description: Deep Fried Bucket Name
+    Value: !Ref DeepFriedBucket

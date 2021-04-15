@@ -6,3 +6,4 @@
 .vscode/*
 __pycache__/
 .aws-sam
+node_modules

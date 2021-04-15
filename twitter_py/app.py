@@ -9,7 +9,7 @@ dynamodb_client = boto3.client("dynamodb")
 
 def get_twitter_api():
     twitter_auth = dynamodb_client.get_item(
-        TableName=os.getenv("DEEP_FRIED_TABLE"), Key={"id": {"S": "twitter_auth"}}
+        TableName=os.getenv("TABLE_NAME"), Key={"id": {"S": "twitter_auth"}}
     )["Item"]
     auth = tweepy.OAuthHandler(
         twitter_auth["consumer_key"]["S"], twitter_auth["consumer_secret"]["S"]
@@ -25,20 +25,15 @@ twitter_api = get_twitter_api()
 
 def _find_tweet_focus(status):
     if hasattr(status, "in_reply_to_screen_name"):
-        target_id = status.in_reply_to_status_id_str
-        target_url = "https://mobile.twitter.com/{}/status/{}".format(
-            status.in_reply_to_screen_name, status.in_reply_to_status_id_str
-        )
-    else:
-        target_id = status.id_str
-        target_url = "https://mobile.twitter.com/{}/status/{}".format(
-            status.user.screen_name, status.id_str
-        )
-
+        return {
+            "mention_id": status.id_str,
+            "target_user": status.in_reply_to_screen_name,
+            "target_id": status.in_reply_to_status_id_str,
+        }
     return {
         "mention_id": status.id_str,
-        "target_id": target_id,
-        "target_url": target_url,
+        "target_user": status.user.screen_name,
+        "target_id": status.id_str,
     }
 
 
@@ -47,7 +42,7 @@ def process_mentions(_event, _context):
     Get the Twitter bot's mentions, and execute lambda handler events for each of them.
     """
     last_request = dynamodb_client.get_item(
-        TableName=os.getenv("DEEP_FRIED_TABLE"), Key={"id": {"S": "last_request"}}
+        TableName=os.getenv("TABLE_NAME"), Key={"id": {"S": "last_request"}}
     )
     since_id = last_request.get("Item", {}).get("since_id", {}).get("S")
 
@@ -67,7 +62,7 @@ def process_mentions(_event, _context):
             datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc).isoformat()
         )
         dynamodb_client.update_item(
-            TableName=os.getenv("DEEP_FRIED_TABLE"),
+            TableName=os.getenv("TABLE_NAME"),
             Key={"id": {"S": "last_request"}},
             AttributeUpdates={
                 "since_id": {
