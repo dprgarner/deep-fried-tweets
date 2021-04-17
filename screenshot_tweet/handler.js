@@ -16,7 +16,6 @@ exports.handler = async (event) => {
   const result = await screenshotTweet(event, {
     browser,
     s3Client,
-    logger: console.log.bind(console),
   });
 
   console.log(result);

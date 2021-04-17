@@ -1,17 +1,19 @@
-const { promisify } = require("util");
 const fs = require("fs");
 const readline = require("readline");
+const { promisify } = require("util");
 
 const puppeteer = require("puppeteer");
 
-const writeFile = promisify(fs.writeFile);
-
 const screenshotTweet = require("./screenshot_tweet");
 
+const writeFile = promisify(fs.writeFile);
+
 const s3Client = {
-  putObject: async ({ Body, Key }) => {
-    await writeFile(Key, Body);
-  },
+  putObject: ({ Body, Key }) => ({
+    promise: async () => {
+      await writeFile(Key, Body);
+    },
+  }),
 };
 
 async function getInput() {
@@ -35,7 +37,6 @@ async function main() {
   const result = await screenshotTweet(event, {
     browser,
     s3Client,
-    logger: console.log.bind(console),
   });
 
   console.log(result);
