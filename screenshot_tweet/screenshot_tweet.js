@@ -65,40 +65,46 @@ const uploadScreenshot = (s3Client, screenshot, filename) => {
     .promise();
 };
 
+const deepFry = (lambdaClient, mention_id, filename) => {
+  const lambdaEvent = {
+    mention_id,
+    filename,
+  };
+
+  return lambdaClient
+    .invoke({
+      FunctionName: process.env.DEEP_FRY_FUNCTION,
+      InvocationType: "Event",
+      Payload: JSON.stringify(lambdaEvent),
+    })
+    .promise();
+};
+
 module.exports = async (
   { mention_id, target_user, target_id },
-  { browser, s3Client }
+  { browser, s3Client, lambdaClient }
 ) => {
   const page = await browser.newPage();
-  let uploadPromise;
+  let uploadAndDeepFryPromise;
 
   try {
     await navigateToTweet(page, target_user, target_id);
 
-    // try {
     const frame = await waitForIframe(page, target_id);
-    // } catch (e) {
-    //   const screenshot = await (
-    //     await page.waitForSelector("iframe")
-    //   ).screenshot({ fullPage: true });
-    //   await uploadScreenshot(s3Client, screenshot, "./err.png");
-    //   throw e;
-    // }
 
     console.log("Taking screenshot...");
     const screenshot = await frame.screenshot();
 
     const filename = getFilename(mention_id);
-    uploadPromise = uploadScreenshot(s3Client, screenshot, filename);
-
-    return {
-      mention_id,
-      filename,
-    };
+    uploadAndDeepFryPromise = (async () => {
+      await uploadScreenshot(s3Client, screenshot, filename);
+      await deepFry(lambdaClient, mention_id, filename);
+    })();
   } finally {
     const browserClosePromise = browser.close();
-    if (uploadPromise) {
-      await uploadPromise;
+
+    if (uploadAndDeepFryPromise) {
+      await uploadAndDeepFryPromise;
     }
     await browserClosePromise;
     console.log("Browser closed.");

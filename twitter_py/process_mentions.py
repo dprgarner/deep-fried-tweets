@@ -72,13 +72,9 @@ def _find_tweet_focus(status):
 
 
 def screenshot_tweet(lambda_client, status):
-    lambda_event = _find_tweet_focus(status.id_str)
-    print("Invoking screenshot tweet:", lambda_event)
-
-    response = lambda_client.invoke(
+    lambda_event = _find_tweet_focus(status)
+    lambda_client.invoke(
         FunctionName=os.getenv("SCREENSHOT_TWEET_FUNCTION"),
-        # InvocationType='Event',
-        InvocationType="DryRun",
+        InvocationType="Event",
         Payload=json.dumps(lambda_event),
     )
-    print("Invoked lambda:", response)

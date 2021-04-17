@@ -5,7 +5,5 @@ const deepFry = require("./deep_fry");
 const s3Client = new S3({ region: process.env.AWS_REGION });
 
 exports.handler = async (event) => {
-  const result = await deepFry(event, { s3Client });
-
-  console.log(result);
+  await deepFry(event, { s3Client });
 };

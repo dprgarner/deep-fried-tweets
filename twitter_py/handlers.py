@@ -21,6 +21,7 @@ def process_mentions(_event, _context):
     new_since_id = since_id
     try:
         for status in get_mentions_since(twitter_api, since_id):
+            print("Found mention:", status.id_str)
             screenshot_tweet(lambda_client, status)
             new_since_id = status.id_str
     finally:

@@ -28,9 +28,7 @@ async function getInput() {
 async function main() {
   const event = JSON.parse(await getInput());
 
-  const result = await deepFry(event, { s3Client });
-
-  console.log(result);
+  await deepFry(event, { s3Client });
 }
 
 main();

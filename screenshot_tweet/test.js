@@ -16,6 +16,14 @@ const s3Client = {
   }),
 };
 
+const lambdaClient = {
+  invoke: (event) => ({
+    promise: async () => {
+      console.log(event);
+    },
+  }),
+};
+
 async function getInput() {
   const rl = readline.createInterface({
     input: process.stdin,
@@ -37,6 +45,7 @@ async function main() {
   const result = await screenshotTweet(event, {
     browser,
     s3Client,
+    lambdaClient,
   });
 
   console.log(result);
