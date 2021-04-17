@@ -1,0 +1,15 @@
+{
+  "name": "deep-fry",
+  "version": "0.0.0",
+  "description": "Deep fry an image",
+  "author": "David Garner",
+  "license": "ISC",
+  "dependencies": {
+    "canvas": "^2.7.0",
+    "fabric": "^4.4.0"
+  },
+  "devDependencies": {
+    "aws-sdk": "^2.888.0",
+    "eslint": "^7.24.0"
+  }
+}

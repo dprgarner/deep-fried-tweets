@@ -33,7 +33,7 @@ async function waitForIframe(page, target_id) {
   console.log("performing sanity check...");
 
   const iframe = await retry(async () => {
-    const iframe = await page.waitForSelector("iframe");
+    const iframe = await page.waitForSelector("iframe", { visible: true });
     const frameContent = await iframe.contentFrame();
     const links = await frameContent.$$eval("[role=link]", (els) =>
       els.map((el) => el.getAttribute("href"))

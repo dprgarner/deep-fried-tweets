@@ -54,6 +54,21 @@ Resources:
         Variables:
           BUCKET_NAME: !Ref DeepFriedBucket
 
+  DeepFryFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: deep_fry/
+      Handler: handler.handler
+      Runtime: nodejs12.x
+      Timeout: 20
+      MemorySize: 1024
+      Policies:
+        - S3WritePolicy:
+            BucketName: !Ref DeepFriedBucket
+      Environment:
+        Variables:
+          BUCKET_NAME: !Ref DeepFriedBucket
+
 Outputs:
   DeepFriedTable:
     Description: Deep Fried Table ID
