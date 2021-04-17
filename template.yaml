@@ -3,13 +3,6 @@ Transform: AWS::Serverless-2016-10-31
 Description: |
   The SAM Template for Deep Frying Tweets. Extra Crispy.
 
-# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
-Globals:
-  Function:
-    Environment:
-      Variables:
-        TABLE_NAME: !Ref DeepFriedTable
-
 Resources:
   DeepFriedTable:
     Type: AWS::Serverless::SimpleTable
@@ -23,36 +16,37 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: twitter_py/
-      Handler: app.process_mentions
+      Handler: handlers.process_mentions
       Runtime: python3.8
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref DeepFriedTable
+          SCREENSHOT_TWEET_FUNCTION: !Ref ScreenshotTweetFunction
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref DeepFriedTable
-        # - LambdaInvokePolicy:
-        #     FunctionName: !Ref ScreenshotTweetFunction
+        - LambdaInvokePolicy:
+            FunctionName: !Ref ScreenshotTweetFunction
 
   DeepFriedBucket:
     Type: AWS::S3::Bucket
     DeletionPolicy: Delete
     Properties:
       BucketName: deep-fried-bucket
-
-  ScreenshotTweetLayer:
-    Type: AWS::Serverless::LayerVersion
-    Properties:
-      Description: The dependencies for the Chromium screenshot-taker
-      ContentUri: ./
-      RetentionPolicy: Delete
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeleteOldImages
+            Status: Enabled
+            ExpirationInDays: 7
 
   ScreenshotTweetFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: ./screenshot_tweet/app.handler
+      CodeUri: screenshot_tweet/
+      Handler: handler.handler
       Runtime: nodejs14.x
       Timeout: 20
-      MemorySize: 1024
-      Layers:
-        - !Ref ScreenshotTweetLayer
+      MemorySize: 512
       Policies:
         - S3WritePolicy:
             BucketName: !Ref DeepFriedBucket
@@ -67,3 +61,6 @@ Outputs:
   DeepFriedBucket:
     Description: Deep Fried Bucket Name
     Value: !Ref DeepFriedBucket
+  ScreenshotTweetFunction:
+    Description: Name of the screenshot tweet function
+    Value: !Ref ScreenshotTweetFunction
