@@ -1,40 +1,35 @@
-# Adapted from:
-# https://github.com/jwerre/node-canvas-lambda
-
 FROM amazonlinux:latest
-
-ARG LIBS=/usr/lib64
-ARG NODE_VERSION=12
-
-# set up container
-RUN yum -y update \
-    && yum -y groupinstall "Development Tools" \
-    && curl --silent --location https://rpm.nodesource.com/setup_${NODE_VERSION}.x | bash - \
-    && yum install -y nodejs gcc-c++ cairo-devel libjpeg-turbo-devel pango-devel giflib-devel
-# && yum install -y nodejs cairo cairo-devel cairomm-devel libjpeg-turbo-devel pango pango-devel pangomm pangomm-devel giflib-devel
-
-RUN node --version
-
-WORKDIR /root/nodejs
-
-RUN npm install canvas@next \
-    chartjs-plugin-datalabels \
-    chartjs-node-canvas \
-    chart.js
-
-WORKDIR /root/lib
-
-# gather missing libraries
-RUN cp $LIBS/libblkid.so.1 . \
-    && cp $LIBS/libmount.so.1 . \
-    && cp $LIBS/libuuid.so.1 . \
-    && cp $LIBS/libfontconfig.so.1 . \
-    && cp $LIBS/libpixman-1.so.0 .
-
 
 WORKDIR /root
 
-RUN zip -r -9 node${NODE_VERSION}_canvas_layer.zip nodejs \
-    && zip -r -9 node${NODE_VERSION}_canvas_lib64_layer.zip lib
+# # Possibly needed?
+# RUN yum -y update \
+#     && yum -y groupinstall "Development Tools" \
+#     && yum install -y \
+#     \
+#     gcc-c++ \
+#     cairo-devel \
+#     libjpeg-turbo-devel \
+#     pango-devel \
+#     giflib-devel \
+#     \
+#     && mkdir ./lib \
+#     && cp $LIBS/libblkid.so.1 ./lib \
+#     && cp $LIBS/libmount.so.1 ./lib \
+#     && cp $LIBS/libuuid.so.1 ./lib \
+#     && cp $LIBS/libfontconfig.so.1 ./lib \
+#     && cp $LIBS/libpixman-1.so.0 ./lib
 
-CMD ["/bin/sh", "-c", "cp *.zip ./dist"]
+# Probably not needed?
+# && yum install -y nodejs cairo cairo-devel cairomm-devel libjpeg-turbo-devel pango pango-devel pangomm pangomm-devel giflib-devel
+
+# A bunch of libraries I globbed from the following links:
+# https://github.com/jwerre/node-canvas-lambda
+# https://github.com/Automattic/node-canvas/wiki/Installation:-AWS-Lambda
+RUN yum -y update \
+    && yum groupinstall "Development Tools" -y \
+    && yum install -y libuuid-devel libmount-devel zlib cairo-devel libjpeg-turbo-devel giflib-devel pango-devel \
+    && mkdir ./lib \
+    && (cp /usr/lib64/{libuuid.so.1,libmount.so.1,libblkid.so.1,libz.so.1,libpng12.so.0,libjpeg.so.62,libpixman-1.so.0,libfreetype.so.6,libcairo.so.2,libpango-1.0.so.0,libpangocairo-1.0.so.0,libpangoft2-1.0.so.0} ./lib || true)
+
+CMD ["/bin/sh", "-c", "cp ./lib/* ./dist/"]

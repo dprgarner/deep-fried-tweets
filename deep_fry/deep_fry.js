@@ -1,3 +1,4 @@
+const path = require("path");
 const { fabric } = require("fabric");
 
 const toBuffer = async (stream) => {
@@ -25,12 +26,21 @@ const uploadImage = (s3Client, imageBuffer, filename) => {
 module.exports = async function ({ mention_id, filename }, { s3Client }) {
   const canvas = new fabric.StaticCanvas(null, { width: 200, height: 200 });
 
+  fabric.nodeCanvas.registerFont(
+    path.join(__dirname, "/font/Ubuntu/Ubuntu-Regular.ttf"),
+    {
+      family: "Ubuntu",
+      weight: "regular",
+      style: "normal",
+    }
+  );
+
   const text = new fabric.Text("Hello world", {
     left: 0,
     top: 100,
     fill: "#f55",
     angle: 15,
-    fontFamily: "Comic Sans",
+    fontFamily: "Ubuntu",
     fontSize: 20,
   });
   const rect = new fabric.Rect({ width: 200, height: 200, fill: "white" });
