@@ -1,26 +1,14 @@
 # Deep Fried Tweets
 
-## TODO
+## Getting started
 
-- Split off debugging testing lambda from real lambda?
-
-## Take a screenshot with Chrome
-
-Lambdas can run containers now!
-https://aws.amazon.com/blogs/aws/new-for-aws-lambda-container-image-support/
+First, install SAM and Docker, and run the following:
 
 ```bash
-docker container run -it --rm -v $(pwd):/usr/src/app zenika/alpine-chrome --no-sandbox --screenshot --hide-scrollbars --force-device-scale-factor=2 --window-size=480,600 https://github.com/Zenika/alpine-chrome
-```
-
-## Deploy the sample application
-
-```bash
+./deep_fry/libs/build.sh
 sam build --use-container
 sam deploy --guided
 ```
-
-The SAM CLI installs dependencies defined in `hello_world/requirements.txt`, creates a deployment package, and saves it in the `.aws-sam/build` folder.
 
 After deploying, the Twitter API keys from the app need to be added in a DynamoDB document. Twitter API details need to be set up by registering an app, and following the OAuth 1A authentication process: https://docs.tweepy.org/en/latest/auth_tutorial.html#oauth-1a-authentication
 
@@ -48,46 +36,73 @@ dynamodb_client.put_item(
 )
 ```
 
-## Test a lambda
+## Manually test the individual functions
+
+### Twitter API
+
+```bash
+cd twitter_py
+# Set up an env for Python 3.8
+pip install -r requirements.txt
+python
+```
+
+In the python shell:
+
+```py
+from test import *
+```
+
+### screenshot_tweet
+
+```bash
+cd screenshot_tweet
+npm install
+cat ../events/screenshot.json | node test.js
+```
+
+### deep_fry
+
+```bash
+./deep_fry_libs/build.sh  # If this hasn't been run already
+cd deep_fry
+npm install
+cat ../events/deep_fry.json | node test.js
+```
+
+## Run a lambda in a local environment imitating AWS
 
 Add the following variables to .env.json file:
 
 ```json
 {
   "Parameters": {
-    "DEEP_FRIED_TABLE": "deep-fried-table"
+    "TWITTER_CONSUMER_KEY": "aaaaaaaa",
+    "TWITTER_CONSUMER_SECRET": "aaaaaaaa",
+    "TWITTER_ACCESS_TOKEN": "aaaaaaaa",
+    "TWITTER_ACCESS_TOKEN_SECRET": "aaaaaaaa",
+    "TABLE_NAME": "aaaaaaaa",
+    "BUCKET_NAME": "aaaaaaaa",
+    "SCREENSHOT_TWEET_FUNCTION": "aaaaaaaa",
+    "DEEP_FRY_FUNCTION": "aaaaaaaa"
   }
 }
 ```
 
-The table Physical ID can be found in the Console or by querying on the CLI:
+The values of these fields can be found from the stack deployment output variables.
 
-```bash
-aws cloudformation describe-stack-resource --stack-name deepfriedtweets --logical-resource-id DeepFriedTable
-```
-
-Invoke the Lambda function:
+To invoke a Lambda function:
 
 ```bash
 sam local invoke ProcessMentionsFunction --env-vars .env.json --event events/scheduled.json
 ```
 
-This will run the built version of the lambda in `./aws-sam`.
+This will run the built version of the lambda in `./aws-sam`. In general, invoking a lambda function will invoke the other downstream lambdas.
 
-The lambda function will need to be rebuilt each time:
+Lambda functions need to be rebuilt each time:
 
 ```
-sam build --use-container && sam local invoke ProcessMentionsFunction --env-vars .env.json --event events/scheduled.json
-```
-
-## Tests
-
-Tests are defined in the `tests` folder in this project. Use PIP to install the test dependencies and run tests.
-
-```bash
-pip install -r tests/requirements.txt
-python -m pytest tests/unit -v
-AWS_SAM_STACK_NAME=deepfriendmemes python -m pytest tests/integration -v
+sam build --use-container ProcessMentionsFunction && sam local invoke ProcessMentionsFunction --env-vars .env.json --event events/scheduled.json
 ```
 
 ## Cleanup
