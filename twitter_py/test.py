@@ -12,14 +12,18 @@ with open(".env.json") as f:
 
 api = tweepy.API(auth)
 
-# ids = [
-#     status.id
-#     for status in tweepy.Cursor(
-#         api.user_timeline,
-#         screen_name="thenecrowizzard",
-#         since_id=1358063784498192386,
-#         trim_user=True,
-#         include_entities=False,
-#     ).items()
-# ]
-# api.get_status(id=1380490608930914313)
+
+def get_dank_tweets():
+    # A list of tweets including a private status.
+    for s in api.statuses_lookup(
+        ["1383772550254133250", "1383772620114464768", "1383774998226112517"],
+        trim_user=False,
+        include_entities=False,
+    ):
+        yield s
+
+    # For testing.
+    for status in api.search(
+        "dank", lang="en", trim_user=False, include_entities=False, count=30
+    ):
+        yield status

@@ -12,6 +12,17 @@ Resources:
         ReadCapacityUnits: 2
         WriteCapacityUnits: 2
 
+  DeepFriedBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete
+    Properties:
+      BucketName: deep-fried-bucket
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeleteOldImages
+            Status: Enabled
+            ExpirationInDays: 7
+
   ProcessMentionsFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -28,17 +39,6 @@ Resources:
             TableName: !Ref DeepFriedTable
         - LambdaInvokePolicy:
             FunctionName: !Ref ScreenshotTweetFunction
-
-  DeepFriedBucket:
-    Type: AWS::S3::Bucket
-    DeletionPolicy: Delete
-    Properties:
-      BucketName: deep-fried-bucket
-      LifecycleConfiguration:
-        Rules:
-          - Id: DeleteOldImages
-            Status: Enabled
-            ExpirationInDays: 7
 
   ScreenshotTweetFunction:
     Type: AWS::Serverless::Function

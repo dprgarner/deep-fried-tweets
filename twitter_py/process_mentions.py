@@ -1,78 +1,88 @@
-import datetime
 import json
 import os
 
 import tweepy
 
+from dynamodb import get_credentials
+
 
 def get_twitter_api(dynamodb_client):
-    twitter_auth = dynamodb_client.get_item(
-        TableName=os.getenv("TABLE_NAME"), Key={"id": {"S": "twitter_auth"}}
-    )["Item"]
+    credentials = get_credentials(dynamodb_client)
     auth = tweepy.OAuthHandler(
-        twitter_auth["consumer_key"]["S"], twitter_auth["consumer_secret"]["S"]
+        credentials["consumer_key"]["S"], credentials["consumer_secret"]["S"]
     )
     auth.set_access_token(
-        twitter_auth["access_token"]["S"], twitter_auth["access_token_secret"]["S"]
+        credentials["access_token"]["S"], credentials["access_token_secret"]["S"]
     )
     return tweepy.API(auth)
-
-
-def get_since_id(dynamodb_client):
-    last_request = dynamodb_client.get_item(
-        TableName=os.getenv("TABLE_NAME"), Key={"id": {"S": "last_request"}}
-    )
-    since_id = last_request.get("Item", {}).get("since_id", {}).get("S")
-    return since_id
 
 
 def get_mentions_since(twitter_api, since_id):
     statuses = tweepy.Cursor(
         twitter_api.mentions_timeline,
         since_id=since_id,
-        trim_user=True,
+        trim_user=False,
         include_entities=False,
     ).items()
     for status in reversed(list(statuses)):
         yield status
 
 
-def set_since_id(dynamodb_client, since_id):
-    current_time = (
-        datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc).isoformat()
-    )
-    dynamodb_client.update_item(
-        TableName=os.getenv("TABLE_NAME"),
-        Key={"id": {"S": "last_request"}},
-        AttributeUpdates={
-            "since_id": {
-                "Value": {"S": since_id},
-                "Action": "PUT",
-            },
-            "datetime": {
-                "Value": {"S": current_time},
-                "Action": "PUT",
-            },
+def _is_retweet(status):
+    return bool(getattr(status, "retweeted_status", None))
+
+
+def _is_reply(status):
+    return bool(getattr(status, "in_reply_to_status_id", None))
+
+
+def _parse_status(status):
+    parsed = {
+        "id": status.id_str,
+        "user": {
+            "id": status.user.id_str,
+            "screen_name": status.user.screen_name,
         },
-    )
+        "text": status.text,
+        "url": "https://www.twitter.com/{}/status/{}".format(
+            status.user.screen_name,
+            status.id_str,
+        ),
+        "possibly_sensitive": getattr(status, "possibly_sensitive", False),
+    }
+    assert parsed["user"]["id"]
+    assert parsed["user"]["screen_name"]
+    return parsed
 
 
-def _find_tweet_focus(status):
-    if hasattr(status, "in_reply_to_screen_name"):
-        return {
-            "mention_id": status.id_str,
-            "target_user": status.in_reply_to_screen_name,
-            "target_id": status.in_reply_to_status_id_str,
-        }
+def to_event(target, mention):
     return {
-        "mention_id": status.id_str,
-        "target_user": status.user.screen_name,
-        "target_id": status.id_str,
+        "_is_reply": _is_reply(mention),
+        "mention": _parse_status(mention),
+        "target": _parse_status(target),
     }
 
 
-def screenshot_tweet(lambda_client, status):
-    lambda_event = _find_tweet_focus(status)
+def process_mention(twitter_api, lambda_client, mention):
+    print("Found mention:", mention.id_str)
+
+    if _is_retweet(mention):
+        print("Tweet is a retweet - skipping.")
+        return
+
+    if _is_reply(mention):
+        print("mention is a reply - looking up target")
+        target = twitter_api.get_status(
+            id=mention.in_reply_to_status_id_str,
+            trim_user=False,
+            include_entities=False,
+        )
+    else:
+        target = mention
+
+    print("attempting screenshot...")
+    lambda_event = to_event(target, mention)
+    # print(json.dumps(lambda_event, indent=2))
     lambda_client.invoke(
         FunctionName=os.getenv("SCREENSHOT_TWEET_FUNCTION"),
         InvocationType="Event",

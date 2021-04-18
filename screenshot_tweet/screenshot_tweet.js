@@ -1,5 +1,4 @@
-async function navigateToTweet(page, target_user, target_id) {
-  const tweetUrl = `https://twitter.com/${target_user}/status/${target_id}`;
+async function navigateToTweet(page, tweetUrl) {
   const pageUrl = `https://publish.twitter.com/?query=${encodeURIComponent(
     tweetUrl
   )}&widget=Tweet`;
@@ -65,40 +64,36 @@ const uploadScreenshot = (s3Client, screenshot, filename) => {
     .promise();
 };
 
-const deepFry = (lambdaClient, mention_id, filename) => {
-  const lambdaEvent = {
-    mention_id,
-    filename,
-  };
-
-  return lambdaClient
+const deepFry = (lambdaClient, lambdaEvent) =>
+  lambdaClient
     .invoke({
       FunctionName: process.env.DEEP_FRY_FUNCTION,
       InvocationType: "Event",
       Payload: JSON.stringify(lambdaEvent),
     })
     .promise();
-};
 
-module.exports = async (
-  { mention_id, target_user, target_id },
-  { browser, s3Client, lambdaClient }
-) => {
+module.exports = async (event, { browser, s3Client, lambdaClient }) => {
   const page = await browser.newPage();
   let uploadAndDeepFryPromise;
 
   try {
-    await navigateToTweet(page, target_user, target_id);
+    await navigateToTweet(page, event.target.url);
 
-    const frame = await waitForIframe(page, target_id);
+    const frame = await waitForIframe(page, event.target.id);
 
     console.log("Taking screenshot...");
     const screenshot = await frame.screenshot();
 
-    const filename = getFilename(mention_id);
+    const filename = getFilename(event.mention.id);
+
     uploadAndDeepFryPromise = (async () => {
       await uploadScreenshot(s3Client, screenshot, filename);
-      await deepFry(lambdaClient, mention_id, filename);
+      const lambdaEvent = {
+        ...event,
+        filename,
+      };
+      await deepFry(lambdaClient, lambdaEvent);
     })();
   } finally {
     const browserClosePromise = browser.close();

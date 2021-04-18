@@ -1,12 +1,13 @@
+import traceback
 import boto3
 
+from dynamodb import get_since_id, set_since_id
 from process_mentions import (
-    get_since_id,
     get_twitter_api,
     get_mentions_since,
-    set_since_id,
-    screenshot_tweet,
+    process_mention,
 )
+
 
 dynamodb_client = boto3.client("dynamodb")
 twitter_api = get_twitter_api(dynamodb_client)
@@ -20,9 +21,11 @@ def process_mentions(_event, _context):
     since_id = get_since_id(dynamodb_client)
     new_since_id = since_id
     try:
-        for status in get_mentions_since(twitter_api, since_id):
-            print("Found mention:", status.id_str)
-            screenshot_tweet(lambda_client, status)
-            new_since_id = status.id_str
+        for mention in get_mentions_since(twitter_api, since_id):
+            try:
+                process_mention(twitter_api, lambda_client, mention)
+            except Exception as e:
+                traceback.print_exc()
+            new_since_id = mention.id_str
     finally:
         set_since_id(dynamodb_client, new_since_id)

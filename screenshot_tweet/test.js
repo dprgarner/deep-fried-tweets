@@ -1,4 +1,5 @@
 const fs = require("fs");
+const path = require("path");
 const readline = require("readline");
 const { promisify } = require("util");
 
@@ -11,7 +12,7 @@ const writeFile = promisify(fs.writeFile);
 const s3Client = {
   putObject: ({ Body, Key }) => ({
     promise: async () => {
-      await writeFile(Key, Body);
+      await writeFile(path.join(__dirname, "..", "img", "tweets", Key), Body);
     },
   }),
 };
@@ -37,18 +38,20 @@ async function getInput() {
 }
 
 async function main() {
-  const event = JSON.parse(await getInput());
-  const browser = await puppeteer.launch({
-    ignoreHTTPSErrors: true,
-  });
+  const input = JSON.parse(await getInput());
+  const events = input.length ? input : [input];
 
-  const result = await screenshotTweet(event, {
-    browser,
-    s3Client,
-    lambdaClient,
-  });
+  for (const event of events) {
+    const browser = await puppeteer.launch({
+      ignoreHTTPSErrors: true,
+    });
 
-  console.log(result);
+    await screenshotTweet(event, {
+      browser,
+      s3Client,
+      lambdaClient,
+    });
+  }
 }
 
 main();
