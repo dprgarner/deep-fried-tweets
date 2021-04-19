@@ -65,8 +65,11 @@ Resources:
       Handler: handler.handler
       Runtime: nodejs12.x
       Timeout: 20
-      MemorySize: 1024
+      MemorySize: 512
+      # MemorySize: 1024
       Policies:
+        - S3ReadPolicy:
+            BucketName: !Ref DeepFriedBucket
         - S3WritePolicy:
             BucketName: !Ref DeepFriedBucket
       Environment:
