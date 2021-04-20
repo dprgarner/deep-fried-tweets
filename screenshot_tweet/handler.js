@@ -6,7 +6,7 @@ const Lambda = require("aws-sdk/clients/lambda");
 const screenshotTweet = require("./screenshot_tweet");
 
 const s3Client = new S3({ region: process.env.AWS_REGION });
-var lambdaClient = new Lambda();
+const lambdaClient = new Lambda();
 
 exports.handler = async (event) => {
   const browser = await chromium.puppeteer.launch({

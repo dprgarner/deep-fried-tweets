@@ -3,6 +3,7 @@ const path = require("path");
 const readline = require("readline");
 const { promisify } = require("util");
 
+const { downloadImage, uploadImage, reply } = require("./aws");
 const deepFry = require("./deep_fry");
 
 const readFile = promisify(fs.readFile);
@@ -45,15 +46,28 @@ async function getInput() {
   return lines.join("\n");
 }
 
-async function main() {
+async function test() {
   const input = JSON.parse(await getInput());
   const events = input.length ? input : [input];
 
   for (const event of events) {
     console.log("Processing...");
-    const response = await deepFry(event, { s3Client, lambdaClient });
-    console.log(response);
+
+    const inputBuffer = await downloadImage(s3Client, event.filename);
+    const outputBuffer = await deepFry(inputBuffer);
+
+    const deepFriedFilename = event.filename.replace(
+      /\.png/,
+      `--${new Date().valueOf()}.png`
+    );
+
+    await uploadImage(s3Client, outputBuffer, deepFriedFilename);
+
+    await reply(lambdaClient, {
+      ...event,
+      deep_fried_filename: deepFriedFilename,
+    });
   }
 }
 
-main();
+test();
