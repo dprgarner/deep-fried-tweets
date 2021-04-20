@@ -5,6 +5,8 @@ import tweepy
 
 from dynamodb import get_credentials
 
+DRY_RUN = os.getenv("DRY_RUN") == "true"
+
 
 def get_twitter_api(dynamodb_client):
     credentials = get_credentials(dynamodb_client)
@@ -82,9 +84,9 @@ def process_mention(twitter_api, lambda_client, mention):
 
     print("attempting screenshot...")
     lambda_event = to_event(target, mention)
-    # print(json.dumps(lambda_event, indent=2))
+
     lambda_client.invoke(
         FunctionName=os.getenv("SCREENSHOT_TWEET_FUNCTION"),
-        InvocationType="Event",
+        InvocationType="DryRun" if DRY_RUN else "Event",
         Payload=json.dumps(lambda_event),
     )

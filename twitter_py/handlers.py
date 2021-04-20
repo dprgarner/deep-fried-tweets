@@ -29,3 +29,11 @@ def process_mentions(_event, _context):
             new_since_id = mention.id_str
     finally:
         set_since_id(dynamodb_client, new_since_id)
+
+
+def reply(_event, _context):
+    """
+    Replies to the Twitter mention.
+    TODO.
+    """
+    return {}

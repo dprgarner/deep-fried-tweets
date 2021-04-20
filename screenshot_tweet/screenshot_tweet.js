@@ -1,3 +1,5 @@
+const DRY_RUN = process.env.DRY_RUN === "true";
+
 async function navigateToTweet(page, tweetUrl) {
   const pageUrl = `https://publish.twitter.com/?query=${encodeURIComponent(
     tweetUrl
@@ -68,7 +70,7 @@ const deepFry = (lambdaClient, lambdaEvent) =>
   lambdaClient
     .invoke({
       FunctionName: process.env.DEEP_FRY_FUNCTION,
-      InvocationType: "Event",
+      InvocationType: DRY_RUN ? "DryRun" : "Event",
       Payload: JSON.stringify(lambdaEvent),
     })
     .promise();

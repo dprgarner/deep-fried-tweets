@@ -1,5 +1,7 @@
 const { fabric } = require("fabric");
 
+// const DRY_RUN = process.env.DRY_RUN === "true";
+
 const uploadImage = (s3Client, imageBuffer, filename) => {
   console.log("Uploading image to S3:", filename);
 
@@ -100,6 +102,11 @@ module.exports = async function (event, { s3Client }) {
       alpha: 0.05,
     })
   );
+  image.filters.push(
+    new fabric.Image.filters.Convolute({
+      matrix: [0, -1, 0, -1, 5, -1, 0, -1, 0],
+    })
+  );
 
   image.applyFilters();
 
@@ -118,6 +125,8 @@ module.exports = async function (event, { s3Client }) {
   await uploadImage(s3Client, outputBuffer, deepFriedFilename);
 
   console.log("uploaded");
+  // InvocationType: DRY_RUN ? "DryRun" : "Event",
+
   return {
     ...event,
     deep_fried_filename: deepFriedFilename,

@@ -2,7 +2,7 @@
 
 ## Getting started
 
-First, install SAM and Docker, and run the following:
+Install SAM and Docker, and run the following:
 
 ```bash
 ./deep_fry/libs/build.sh
@@ -21,16 +21,16 @@ dynamodb_client.put_item(
     Key={"id": {"S": "twitter_auth"}},
     AttributeUpdates={
         "consumer_key": {
-            "Value": {"S": "aaaaaaaa"},
+            "Value": {"S": "your consumer key"},
         },
         "consumer_secret": {
-            "Value": {"S": "aaaaaaaa"},
+            "Value": {"S": "your consumer secret"},
         },
         "access_token": {
-            "Value": {"S": "aaaaaaaa"},
+            "Value": {"S": "your access token"},
         },
         "access_token_secret": {
-            "Value": {"S": "aaaaaaaa"},
+            "Value": {"S": "your access token secret"},
         },
     },
 )
@@ -40,9 +40,10 @@ dynamodb_client.put_item(
 
 ### Twitter API
 
+Set up a local Python 3.8 virtual environment, and run:
+
 ```bash
 cd twitter_py
-# Set up an env for Python 3.8
 pip install -r requirements.txt
 python
 ```
@@ -58,7 +59,7 @@ from test import *
 ```bash
 cd screenshot_tweet
 npm install
-cat ../events/screenshot.json | node test.js
+cat ../events/screenshot_tweet.json | node test.js
 ```
 
 ### deep_fry
@@ -70,7 +71,7 @@ npm install
 cat ../events/deep_fry.json | node test.js
 ```
 
-## Run a lambda in a local environment imitating AWS
+## Run a lambda in a local environment using SAM CLI
 
 Add the following variables to .env.json file:
 
@@ -81,29 +82,27 @@ Add the following variables to .env.json file:
     "TWITTER_CONSUMER_SECRET": "aaaaaaaa",
     "TWITTER_ACCESS_TOKEN": "aaaaaaaa",
     "TWITTER_ACCESS_TOKEN_SECRET": "aaaaaaaa",
+    "DRY_RUN": "true",
     "TABLE_NAME": "aaaaaaaa",
     "BUCKET_NAME": "aaaaaaaa",
     "SCREENSHOT_TWEET_FUNCTION": "aaaaaaaa",
-    "DEEP_FRY_FUNCTION": "aaaaaaaa"
+    "DEEP_FRY_FUNCTION": "aaaaaaaa",
+    "REPLY_FUNCTION": "aaaaaaaa"
   }
 }
 ```
 
 The values of these fields can be found from the stack deployment output variables.
 
-To invoke a Lambda function:
-
-```bash
-sam local invoke ProcessMentionsFunction --env-vars .env.json --event events/scheduled.json
-```
-
-This will run the built version of the lambda in `./aws-sam`. In general, invoking a lambda function will invoke the other downstream lambdas.
-
-Lambda functions need to be rebuilt each time:
+To build and invoke a single Lambda function:
 
 ```
 sam build --use-container ProcessMentionsFunction && sam local invoke ProcessMentionsFunction --env-vars .env.json --event events/scheduled.json
 ```
+
+This will run the built version of the lambda in `./aws-sam` in a Docker container emulating the Lambda environment. The lambda function will need rebuilding on changes.
+
+To prevent the locally-run lambdas from invoking downstream lambdas, set `DRY_RUN` to `true` in the env variables.
 
 ## Cleanup
 
