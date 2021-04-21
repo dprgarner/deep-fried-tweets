@@ -10,10 +10,10 @@ exports.dataUriToImage = (dataUri) =>
     });
   });
 
-exports.imageToCanvas = (image) => {
+exports.imageToCanvas = (image, scaleFactor) => {
   const canvas = new fabric.StaticCanvas(null);
-  canvas.setWidth(Math.round(image.width));
-  canvas.setHeight(Math.round(image.height));
+  canvas.setWidth(Math.round(image.width * scaleFactor));
+  canvas.setHeight(Math.round(image.height * scaleFactor));
   canvas.add(image);
   return canvas;
 };
@@ -27,10 +27,10 @@ exports.canvasToBuffer = async (canvas) => {
   return Buffer.concat(buffers);
 };
 
-exports.jpegify = async (canvas) => {
+exports.jpegify = async (canvas, quality) => {
   const dataUri = canvas.toDataURL({
     format: "jpeg",
-    quality: 0.5,
+    quality,
   });
   const image = await exports.dataUriToImage(dataUri);
   canvas.clear();

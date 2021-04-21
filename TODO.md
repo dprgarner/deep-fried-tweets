@@ -1,11 +1,12 @@
 # TODO
 
-- Wire it all up
+- Check it all works e2e
 - @deepfryplz
 
 ## Process Mentions
 
 - Block-list?
+- Bad word list?
 
 ## Screenshot Tweet
 
@@ -18,8 +19,10 @@
 - Find a more obnoxious set of settings
 - Randomise
 - Add in daft images
-- Warp
+- Warp points
 
 ## Retry
 
 - Implement.
+- https://botocore.amazonaws.com/v1/documentation/api/latest/reference/response.html
+- https://docs.tweepy.org/en/latest/api.html#upload-media
