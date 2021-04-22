@@ -7,6 +7,7 @@
 __pycache__/
 .aws-sam
 node_modules
-*.png
+img/fried/*.png
+img/tweets/*.png
 lib
 samconfig.toml

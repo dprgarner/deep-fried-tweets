@@ -54,7 +54,54 @@ async function test() {
     console.log("Processing...");
 
     const inputBuffer = await downloadImage(s3Client, event.filename);
-    const outputBuffer = await deepFry(inputBuffer);
+
+    const lightlyBattered = {
+      brightness: 0.15,
+      contrast: 1,
+      noise: 75,
+      redBlend: 0.05,
+      saturation: 20,
+      sharpen: true,
+
+      postJpeg: {
+        iterations: 8,
+        quality: 0.5,
+      },
+    };
+
+    const prettyNoisy = {
+      brightness: 0.15,
+      noise: 100,
+      redBlend: 0.25,
+      redGamma: true,
+      preJpeg: {
+        iterations: 8,
+        quality: 0.3,
+      },
+      postJpeg: {
+        iterations: 8,
+        quality: 0.3,
+      },
+    };
+
+    const rainbowSparkle = {
+      brightness: 0.35,
+      contrast: 0.25,
+      noise: 5,
+      redBlend: 0.35,
+      redGamma: true,
+      saturation: 25,
+      preJpeg: {
+        iterations: 8,
+        quality: 0.3,
+      },
+    };
+    const outputBuffer = await deepFry(
+      inputBuffer,
+      [lightlyBattered, prettyNoisy, rainbowSparkle][
+        Math.floor(Math.random() * 3)
+      ]
+    );
 
     const deepFriedFilename = event.filename.replace(
       /\.png/,

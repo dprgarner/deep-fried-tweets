@@ -35,4 +35,6 @@ exports.jpegify = async (canvas, quality) => {
   const image = await exports.dataUriToImage(dataUri);
   canvas.clear();
   canvas.add(image);
+
+  return image;
 };
