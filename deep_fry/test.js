@@ -5,6 +5,7 @@ const { promisify } = require("util");
 
 const { downloadImage, uploadImage, reply } = require("./aws");
 const deepFry = require("./deep_fry");
+const { rainbowSparkle } = require("./random");
 
 const readFile = promisify(fs.readFile);
 const writeFile = promisify(fs.writeFile);
@@ -73,7 +74,13 @@ async function test() {
       brightness: 0.15,
       noise: 100,
       redBlend: 0.25,
-      redGamma: true,
+
+      gamma: {
+        red: 1.5,
+        green: 0.01,
+        blue: 0.01,
+      },
+
       preJpeg: {
         iterations: 8,
         quality: 0.3,
@@ -84,36 +91,24 @@ async function test() {
       },
     };
 
-    const rainbowSparkle = {
-      brightness: 0.35,
-      contrast: 0.25,
-      noise: 5,
-      redBlend: 0.35,
-      redGamma: true,
-      saturation: 25,
-      preJpeg: {
-        iterations: 8,
-        quality: 0.3,
-      },
-    };
-    const outputBuffer = await deepFry(
-      inputBuffer,
-      [lightlyBattered, prettyNoisy, rainbowSparkle][
-        Math.floor(Math.random() * 3)
-      ]
-    );
+    for (let i = 0; i < 1; i++) {
+      const params = rainbowSparkle();
+      console.log(params);
+      const outputBuffer = await deepFry(inputBuffer, params);
+      const deepFriedFilename = `${i}--${event.filename}.png`;
 
-    const deepFriedFilename = event.filename.replace(
-      /\.png/,
-      `--${new Date().valueOf()}.png`
-    );
+      // const deepFriedFilename = event.filename.replace(
+      //   /\.png/,
+      //   `--${new Date().valueOf()}.png`
+      // );
 
-    await uploadImage(s3Client, outputBuffer, deepFriedFilename);
+      await uploadImage(s3Client, outputBuffer, deepFriedFilename);
 
-    await reply(lambdaClient, {
-      ...event,
-      deep_fried_filename: deepFriedFilename,
-    });
+      await reply(lambdaClient, {
+        ...event,
+        deep_fried_filename: deepFriedFilename,
+      });
+    }
   }
 }
 

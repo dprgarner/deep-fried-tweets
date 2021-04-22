@@ -10,12 +10,16 @@ const {
 
 async function parameterised({ canvas, image }, params) {
   if (params.redGamma) {
+    const red = 0.5 + params.redGamma * 2.5;
+    const green = 0.1 + params.redGamma * (params.yellowGamma || 0) * 1.25;
+    const blue = 0.1;
     image.filters.push(
       new fabric.Image.filters.Gamma({
-        gamma: [1.5, 0.01, 0.01],
+        gamma: [red, green, blue],
       })
     );
   }
+
   image.applyFilters();
 
   if (params.preJpeg) {
