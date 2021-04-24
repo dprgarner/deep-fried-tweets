@@ -15,9 +15,8 @@
 
 ## Deep Fry
 
+- Sunglasses/Lazer eyes on Profile pics?
 - Ifunny.co and other obnoxious watermarks?
-- Find a more obnoxious set of settings
-- Randomise
 - Add in daft images
 - Warp points
 

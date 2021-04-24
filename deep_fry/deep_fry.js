@@ -58,13 +58,15 @@ async function parameterised({ canvas, image }, params) {
       })
     );
   }
-  if (params.sharpen) {
+
+  for (let i = 0; i < params.sharpens || 0; i++) {
     image.filters.push(
       new fabric.Image.filters.Convolute({
-        matrix: [0, -1, 0, -1, 5, -1, 0, -1, 0],
+        matrix: [-1, -1, -1, -1, 9, -1, -1, -1, -1],
       })
     );
   }
+
   image.applyFilters();
 
   if (params.postJpeg) {
