@@ -62,10 +62,8 @@ async function test() {
 
     const inputBuffer = await downloadImage(s3Client, event.filename);
 
-    for (let i = 0; i < 10; i++) {
-      const params = pick([rainbowSparkle, madSharpen, noisy, washedOut]);
-
-      console.log(params);
+    for (let i = 0; i < 1; i++) {
+      const params = pick([rainbowSparkle, madSharpen, noisy, washedOut])();
       const outputBuffer = await deepFry(inputBuffer, params);
 
       const deepFriedFilename = `${i}--${event.filename}.png`;

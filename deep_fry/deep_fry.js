@@ -1,5 +1,6 @@
 const { fabric } = require("fabric");
 
+const initBulgeFilter = require("./bulge");
 const {
   bufferToDataUri,
   dataUriToImage,
@@ -7,6 +8,8 @@ const {
   jpegify,
   canvasToBuffer,
 } = require("./transforms");
+
+initBulgeFilter();
 
 async function parameterised({ canvas, image }, params) {
   if (params.redGamma) {
@@ -93,6 +96,15 @@ module.exports = async function (inputBuffer, params) {
   let canvas = imageToCanvas(image, preScaleFactor);
   image.scale(preScaleFactor);
 
+  image.filters.push(
+    new fabric.Image.filters.Bulge({
+      x: 200,
+      y: 200,
+      strength: 0.5,
+      radius: 150,
+    })
+  );
+  image.applyFilters();
   canvas = await parameterised({ canvas, image }, params);
 
   const postScaleFactor = 1.5;
