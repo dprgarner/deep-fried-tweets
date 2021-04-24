@@ -25,6 +25,19 @@ async function parameterised({ canvas, image }, params) {
 
   image.applyFilters();
 
+  if (params.bulges && params.bulges.length) {
+    for (const bulge of params.bulges) {
+      image.filters.push(
+        new fabric.Image.filters.Bulge({
+          ...bulge,
+          x: image.width * bulge.x,
+          y: image.height * bulge.y,
+        })
+      );
+    }
+    image.applyFilters();
+  }
+
   if (params.preJpeg) {
     for (let i = 0; i < params.preJpeg.iterations; i++) {
       image = await jpegify(canvas, params.preJpeg.quality);
@@ -96,15 +109,6 @@ module.exports = async function (inputBuffer, params) {
   let canvas = imageToCanvas(image, preScaleFactor);
   image.scale(preScaleFactor);
 
-  image.filters.push(
-    new fabric.Image.filters.Bulge({
-      x: 200,
-      y: 200,
-      strength: 0.5,
-      radius: 150,
-    })
-  );
-  image.applyFilters();
   canvas = await parameterised({ canvas, image }, params);
 
   const postScaleFactor = 1.5;

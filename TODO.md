@@ -15,10 +15,10 @@
 
 ## Deep Fry
 
-- Sunglasses/Lazer eyes on Profile pics?
-- Ifunny.co and other obnoxious watermarks?
 - Add in daft images
-- Warp points
+- Ifunny.co and other obnoxious watermarks?
+- Sunglasses/Lazer eyes on Profile pics?
+- Warp points based on interesting items
 
 ## Retry
 

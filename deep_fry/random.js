@@ -120,3 +120,18 @@ exports.washedOut = () => ({
 });
 
 exports.pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+exports.addBulges = () => {
+  const bulges = [];
+  const n = 1 + Math.floor(4 * parabolaish());
+
+  for (let i = 0; i < n; i++) {
+    bulges.push({
+      x: 2 * parabolaish() - 0.5,
+      y: 2 * parabolaish() - 0.5,
+      strength: Math.min(1, 0.5 + parabolaish()),
+      radius: 150,
+    });
+  }
+  return bulges;
+};
