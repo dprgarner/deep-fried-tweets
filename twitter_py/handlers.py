@@ -1,9 +1,8 @@
 import traceback
 import boto3
 
-from dynamodb import get_since_id, set_since_id
+from dynamodb import get_since_id, set_since_id, get_twitter_api
 from process_mentions import (
-    get_twitter_api,
     get_mentions_since,
     process_mention,
 )

@@ -3,20 +3,7 @@ import os
 
 import tweepy
 
-from dynamodb import get_credentials
-
 DRY_RUN = os.getenv("DRY_RUN") == "true"
-
-
-def get_twitter_api(dynamodb_client):
-    credentials = get_credentials(dynamodb_client)
-    auth = tweepy.OAuthHandler(
-        credentials["consumer_key"]["S"], credentials["consumer_secret"]["S"]
-    )
-    auth.set_access_token(
-        credentials["access_token"]["S"], credentials["access_token_secret"]["S"]
-    )
-    return tweepy.API(auth)
 
 
 def get_mentions_since(twitter_api, since_id):
@@ -59,7 +46,7 @@ def _parse_status(status):
 
 def to_event(target, mention):
     return {
-        "_is_reply": _is_reply(mention),
+        "is_reply": _is_reply(mention),
         "mention": _parse_status(mention),
         "target": _parse_status(target),
     }

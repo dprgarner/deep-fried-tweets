@@ -1,6 +1,7 @@
 import json
 import tweepy
 
+
 with open(".env.json") as f:
     env = json.load(f)["Parameters"]
     auth = tweepy.OAuthHandler(
@@ -10,20 +11,39 @@ with open(".env.json") as f:
         env["TWITTER_ACCESS_TOKEN"], env["TWITTER_ACCESS_TOKEN_SECRET"]
     )
 
-api = tweepy.API(auth)
+
+class FakeLambda:
+    def invoke(self, **kwargs):
+        print(json.dumps(json.loads(kwargs["Payload"]), indent=2))
+
+
+twitter_api = tweepy.API(auth)
+lambda_client = FakeLambda()
 
 
 def get_dank_tweets():
     # A list of tweets including a private status.
-    for s in api.statuses_lookup(
+    for status in twitter_api.statuses_lookup(
         ["1383772550254133250", "1383772620114464768", "1383774998226112517"],
         trim_user=False,
         include_entities=False,
     ):
-        yield s
+        yield status
 
     # For testing.
-    for status in api.search(
+    for status in twitter_api.search(
         "dank", lang="en", trim_user=False, include_entities=False, count=30
     ):
         yield status
+
+
+"""
+Usage:
+
+from twitter_py.test import *
+from twitter_py.process_mentions import *
+
+id_=1384831973156339713
+status = twitter_api.get_status(id_)
+process_mention(twitter_api, lambda_client, status)
+"""

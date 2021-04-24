@@ -1,6 +1,8 @@
 import datetime
 import os
 
+import tweepy
+
 
 def get_credentials(dynamodb_client):
     return dynamodb_client.get_item(
@@ -36,3 +38,14 @@ def set_since_id(dynamodb_client, since_id):
         Key={"id": {"S": "last_request"}},
         AttributeUpdates=attribute_updates,
     )
+
+
+def get_twitter_api(dynamodb_client):
+    credentials = get_credentials(dynamodb_client)
+    auth = tweepy.OAuthHandler(
+        credentials["consumer_key"]["S"], credentials["consumer_secret"]["S"]
+    )
+    auth.set_access_token(
+        credentials["access_token"]["S"], credentials["access_token_secret"]["S"]
+    )
+    return tweepy.API(auth)
