@@ -1,4 +1,9 @@
+const fs = require("fs");
+const path = require("path");
 const { fabric } = require("fabric");
+const { promisify } = require("util");
+
+const readFile = promisify(fs.readFile);
 
 exports.bufferToDataUri = (buffer) =>
   `data:image/png;base64,${buffer.toString("base64")}`;
@@ -9,6 +14,12 @@ exports.dataUriToImage = (dataUri) =>
       res(img);
     });
   });
+
+exports.pathToImage = async (filepath) => {
+  const buffer = await readFile(path.join(__dirname, filepath));
+  const image = await exports.dataUriToImage(exports.bufferToDataUri(buffer));
+  return image;
+};
 
 exports.imageToCanvas = (image, scaleFactor) => {
   const canvas = new fabric.StaticCanvas(null);

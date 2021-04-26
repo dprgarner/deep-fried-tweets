@@ -1,21 +1,23 @@
 {
-    "is_reply": true,
+    "is_reply": false,
     "mention": {
-        "id": "1383799457762869250",
+        "id": "1384831973156339713",
         "user": {
-            "id": "857577489165627393",
-            "screen_name": "_ButterflyStep"
+            "id": "24878499",
+            "screen_name": "aljwhite"
         },
-        "text": "@flingsmashswit2 She do be a dank memer",
-        "url": "https://www.twitter.com/_ButterflyStep/status/1383799457762869250"
+        "text": "Doesn't seem very diverse, they should at least expand it to students who aren't named after him. https://t.co/KWZwSkCS1b",
+        "url": "https://www.twitter.com/aljwhite/status/1384831973156339713",
+        "possibly_sensitive": false
     },
     "target": {
-        "id": "1383799099946717190",
+        "id": "1384831973156339713",
         "user": {
-            "id": "1355212724024733701",
-            "screen_name": "flingsmashswit2"
+            "id": "24878499",
+            "screen_name": "aljwhite"
         },
-        "text": "@_ButterflyStep Thanks! I just changed it! I really like how it looks now!",
-        "url": "https://www.twitter.com/flingsmashswit2/status/1383799099946717190"
+        "text": "Doesn't seem very diverse, they should at least expand it to students who aren't named after him. https://t.co/KWZwSkCS1b",
+        "url": "https://www.twitter.com/aljwhite/status/1384831973156339713",
+        "possibly_sensitive": false
     }
 }

@@ -63,7 +63,7 @@ async function test() {
 
     const inputBuffer = await downloadImage(s3Client, event.filename);
 
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 1; i++) {
       let params = pick([rainbowSparkle, madSharpen, noisy, washedOut])();
       params.bulges = addBulges();
 
