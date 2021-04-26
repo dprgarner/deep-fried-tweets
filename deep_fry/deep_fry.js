@@ -9,6 +9,7 @@ const {
   canvasToBuffer,
   pathToImage,
 } = require("./transforms");
+const { pickN, parabolaish } = require("./random");
 
 initBulgeFilter();
 
@@ -143,59 +144,57 @@ const countPixels = ({ map, w, h }, { x, y, dh, dw }) => {
   return { totalWhite, totalBlack };
 };
 
-const getBlankRegions = (canvas) => {
+const getBulgeRegions = (canvas) => {
   canvas.renderAll();
   const ctx = canvas.getContext("2d");
   const w = Math.floor(canvas.width);
   const h = Math.floor(canvas.height);
-  const map = ctx.getImageData(0, 0, w, h);
 
-  let minBlob;
-  let minWhite = 0;
-  for (let i = 0; i < 20; i++) {
-    const x = Math.floor(Math.random() * w);
-    const y = Math.floor(Math.random() * h);
-    let dh = Math.floor(Math.max(100, 0.25 * h) * (0.75 + Math.random() * 0.5));
-    dh = Math.min(dh, h - y);
-    let dw = Math.min(dh, w - x);
-    dh = dw;
+  const dw = 150;
+  const dh = 100;
+  const bulgeRegions = [];
 
-    // const dw = dh;
-    // const x = 280;
-    // const y = 60;
-    // const dh = 100;
-    // const dw = 100;
-    const { totalBlack, totalWhite } = countPixels(
-      { map, w, h },
-      { x, y, dw, dh }
-    );
-    console.log(w, h, x, y, dw, dh, "has average:", { totalBlack, totalWhite });
-    if (totalWhite > minWhite) {
-      minBlob = { x, y, dw, dh };
-      minWhite = totalWhite;
+  for (let i = 0; i < 6; i++) {
+    const map = ctx.getImageData(0, 0, w, h);
+    let maxBlackCoords;
+    let maxBlackRatio = 0;
+
+    for (let j = 0; j < 100; j++) {
+      const x = Math.floor(dw + Math.random() * (w - 2 * dw));
+      const y = Math.floor(dh + Math.random() * (h - 2 * dh));
+      const { totalBlack } = countPixels({ map, w, h }, { x, y, dw, dh });
+      if (totalBlack >= maxBlackRatio) {
+        maxBlackCoords = { x, y, dw, dh };
+        maxBlackRatio = totalBlack;
+      }
     }
-    canvas.add(
+
+    bulgeRegions.push(
       new fabric.Rect({
-        left: x,
-        top: y,
-        fill: "red",
-        width: dw,
-        height: dh,
-        opacity: 0.02,
+        left: maxBlackCoords.x,
+        top: maxBlackCoords.y,
+        width: maxBlackCoords.dw,
+        height: maxBlackCoords.dh,
+        fill: "#aaa",
+        opacity: 1,
       })
     );
+    canvas.add(bulgeRegions[bulgeRegions.length - 1]);
+    canvas.renderAll();
+  }
+  const bulges = [];
+  for (const bulgeRegion of bulgeRegions) {
+    canvas.remove(bulgeRegion);
+    bulges.push({
+      x: bulgeRegion.left / w,
+      y: bulgeRegion.top / h,
+      strength: Math.min(1, 0.5 + parabolaish()),
+      radius: 100,
+    });
   }
 
-  canvas.add(
-    new fabric.Rect({
-      left: minBlob.x,
-      top: minBlob.y,
-      fill: "blue",
-      width: minBlob.dw,
-      height: minBlob.dh,
-      opacity: 0.2,
-    })
-  );
+  canvas.renderAll();
+  return pickN(bulges, Math.floor(1 + Math.random() * 2));
 };
 
 module.exports = async function (inputBuffer, params) {
@@ -205,8 +204,14 @@ module.exports = async function (inputBuffer, params) {
   let canvas = imageToCanvas(image, preScaleFactor);
   image.scale(preScaleFactor);
 
-  // console.log(getBlankRegions(canvas, preScaleFactor));
-  canvas = await parameterised({ canvas, image }, params);
+  const bulges = getBulgeRegions(canvas);
+  canvas = await parameterised(
+    { canvas, image },
+    {
+      ...params,
+      bulges,
+    }
+  );
 
   const postScaleFactor = 1.5;
   canvas.setZoom(postScaleFactor);

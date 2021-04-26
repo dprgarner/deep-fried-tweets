@@ -1,5 +1,6 @@
 const parabolaish = () =>
   0.25 + (Math.random() + Math.random() + Math.random()) / 6;
+exports.parabolaish = parabolaish;
 
 exports.rainbowSparkle = () => ({
   brightness: 0.1 + parabolaish() * 0.4,
@@ -69,6 +70,15 @@ exports.washedOut = () => ({
 });
 
 exports.pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+exports.pickN = (arr, n) => {
+  if (arr.length < n) return arr;
+  if (n === 0) return [];
+  let some = [...arr];
+  const idx = Math.floor(Math.random() * arr.length);
+  some.splice(idx, 1);
+  return [arr[idx]].concat(exports.pickN(some, n - 1));
+};
 
 exports.addBulges = () => {
   const bulges = [];
