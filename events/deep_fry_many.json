@@ -306,5 +306,29 @@
             "url": "https://www.twitter.com/braintickler_/status/1383797298719719428"
         },
         "filename": "2021-04-18T15-43-45-300Z--1383797298719719428.png"
+    },
+    {
+        "is_reply": false,
+        "mention": {
+            "id": "1384831973156339713",
+            "user": {
+                "id": "24878499",
+                "screen_name": "aljwhite"
+            },
+            "text": "Doesn't seem very diverse, they should at least expand it to students who aren't named after him. https://t.co/KWZwSkCS1b",
+            "url": "https://www.twitter.com/aljwhite/status/1384831973156339713",
+            "possibly_sensitive": false
+        },
+        "target": {
+            "id": "1384831973156339713",
+            "user": {
+                "id": "24878499",
+                "screen_name": "aljwhite"
+            },
+            "text": "Doesn't seem very diverse, they should at least expand it to students who aren't named after him. https://t.co/KWZwSkCS1b",
+            "url": "https://www.twitter.com/aljwhite/status/1384831973156339713",
+            "possibly_sensitive": false
+        },
+        "filename": "2021-04-24T16-06-57-688Z--1384831973156339713.png"
     }
 ]

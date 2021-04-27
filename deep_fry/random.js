@@ -79,18 +79,3 @@ exports.pickN = (arr, n) => {
   some.splice(idx, 1);
   return [arr[idx]].concat(exports.pickN(some, n - 1));
 };
-
-exports.addBulges = () => {
-  const bulges = [];
-  const n = 1 + Math.floor(4 * parabolaish());
-
-  for (let i = 0; i < n; i++) {
-    bulges.push({
-      x: 2 * parabolaish() - 0.5,
-      y: 2 * parabolaish() - 0.5,
-      strength: Math.min(1, 0.5 + parabolaish()),
-      radius: 150,
-    });
-  }
-  return bulges;
-};

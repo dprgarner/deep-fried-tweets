@@ -11,7 +11,6 @@ const {
   noisy,
   washedOut,
   pick,
-  addBulges,
 } = require("./random");
 
 const readFile = promisify(fs.readFile);
@@ -65,11 +64,10 @@ async function test() {
 
     for (let i = 0; i < 1; i++) {
       let params = pick([rainbowSparkle, madSharpen, noisy, washedOut])();
-      params.bulges = addBulges();
 
       const outputBuffer = await deepFry(inputBuffer, params);
 
-      const deepFriedFilename = `${i}--${event.filename}.png`;
+      const deepFriedFilename = `${i}--${event.filename}`;
       // const deepFriedFilename = event.filename.replace(
       //   /\.png/,
       //   `--${new Date().valueOf()}.png`
