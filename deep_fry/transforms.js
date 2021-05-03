@@ -25,12 +25,26 @@ exports.imageToCanvas = (image, scaleFactor) => {
   const canvas = new fabric.StaticCanvas(null);
   canvas.setWidth(Math.round(image.width * scaleFactor));
   canvas.setHeight(Math.round(image.height * scaleFactor));
+  image.scale(scaleFactor);
   canvas.add(image);
   return canvas;
 };
 
-exports.canvasToBuffer = async (canvas) => {
+exports.bufferToCanvas = async (inputBuffer, scaleFactor) => {
+  const dataUri = exports.bufferToDataUri(inputBuffer);
+  let image = await exports.dataUriToImage(dataUri);
+  let canvas = exports.imageToCanvas(image, scaleFactor);
+  return { canvas, image };
+};
+
+exports.canvasToBuffer = async (canvas, scaleFactor) => {
+  canvas.setZoom(scaleFactor);
+  canvas.setDimensions({
+    width: canvas.getWidth() * scaleFactor,
+    height: canvas.getHeight() * scaleFactor,
+  });
   canvas.renderAll();
+
   const buffers = [];
   for await (const chunk of canvas.createPNGStream()) {
     buffers.push(chunk);
@@ -48,4 +62,40 @@ exports.jpegify = async (canvas, quality) => {
   canvas.add(image);
 
   return image;
+};
+
+exports.cloneImage = (image) =>
+  new Promise((res) => {
+    image.cloneAsImage((newImage) => {
+      res(newImage);
+    });
+  });
+
+exports.cloneCanvas = (canvas) =>
+  new Promise((res) => {
+    canvas.clone((newCanvas) => {
+      res(newCanvas);
+    });
+  });
+
+exports.loadDankImage = async (imageParams) => {
+  const dankImage = await exports.pathToImage(imageParams.filepath);
+  const ratio = Math.min(
+    imageParams.dw / dankImage.width,
+    imageParams.dh / dankImage.height
+  );
+  const topOffset =
+    dankImage.width > dankImage.height
+      ? (ratio * (dankImage.width - dankImage.height)) / 2
+      : 0;
+  const leftOffset =
+    dankImage.height > dankImage.width
+      ? (ratio * (dankImage.height - dankImage.width)) / 2
+      : 0;
+  dankImage.scale(ratio).set({
+    top: imageParams.y + topOffset,
+    left: imageParams.x + leftOffset,
+    opacity: imageParams.opacity,
+  });
+  return dankImage;
 };

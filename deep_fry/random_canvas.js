@@ -98,7 +98,10 @@ exports.getImageRegions = (canvas) => {
     let bestScore = -Infinity;
 
     for (let j = 0; j < 100; j++) {
-      const dh = Math.floor(100 + Math.random() * 50);
+      const dh = Math.min(
+        canvas.height / 4,
+        Math.floor(100 + Math.random() * 50)
+      );
       const dw = dh;
       const x = Math.floor(dw + Math.random() * (w - 2 * dw));
       const y = Math.floor(dh + Math.random() * (h - 2 * dh));
@@ -143,10 +146,43 @@ exports.getImageRegions = (canvas) => {
   return pickN(imageRegions, Math.floor(2 + Math.random() * 2));
 };
 
-exports.getImages = (imageRegions) => {
-  return imageRegions.map((imageRegion) => ({
+const smallImageWeights = {
+  ok: 5,
+  crying: 5,
+  cryingeyesopen: 4,
+  b: 3,
+  flushedface: 2,
+  100: 2,
+  fire: 2,
+  devil: 2,
+  datboi: 1,
+};
+const getTotalWeight = (weights) =>
+  Object.values(weights).reduce((acc, x) => acc + x, 0);
+
+const saucyImageWeights = {
+  ...smallImageWeights,
+  aubergine: 10,
+  peach: 10,
+  fire: 5,
+};
+
+const getRandomSmallImage = ({ saucy }) => {
+  const weights = saucy ? saucyImageWeights : smallImageWeights;
+  let random = Math.random() * getTotalWeight(weights);
+
+  for (const [key, weight] of Object.entries(weights)) {
+    if (weight >= random) {
+      return key;
+    }
+    random -= weight;
+  }
+};
+
+exports.getImages = (smallImageRegions, params) => {
+  return smallImageRegions.map((imageRegion) => ({
     ...imageRegion,
-    filepath: "./img/b.png",
+    filepath: `./img/${getRandomSmallImage(params)}.png`,
     opacity: 0.85,
   }));
 };

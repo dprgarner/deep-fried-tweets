@@ -9,5 +9,6 @@ __pycache__/
 node_modules
 img/fried/*.png
 img/tweets/*.png
+deep_fry/img/maybe
 lib
 samconfig.toml

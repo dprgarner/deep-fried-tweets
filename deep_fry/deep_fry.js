@@ -1,31 +1,16 @@
 const { fabric } = require("fabric");
 
 const initBulgeFilter = require("./bulge");
-const {
-  bufferToDataUri,
-  dataUriToImage,
-  imageToCanvas,
-  jpegify,
-  canvasToBuffer,
-  pathToImage,
-} = require("./transforms");
-const { getBulges, getImageRegions, getImages } = require("./scan_canvas");
+const { jpegify, cloneImage, loadDankImage } = require("./transforms");
 
 initBulgeFilter();
 
-async function applyParams({ canvas, image }, params) {
-  if (params.redGamma) {
-    const red = 0.5 + params.redGamma * 2.5;
-    const green = 0.1 + params.redGamma * (params.yellowGamma || 0) * 1.25;
-    const blue = 0.1;
-    image.filters.push(
-      new fabric.Image.filters.Gamma({
-        gamma: [red, green, blue],
-      })
-    );
+module.exports = async function applyParams({ canvas, image }, params) {
+  const dankImages = [];
+  for (const imageParams of params.images) {
+    dankImages.push(await loadDankImage(imageParams));
   }
-
-  image.applyFilters();
+  const nerfFactor = 5;
 
   if (params.bulges && params.bulges.length) {
     for (const bulge of params.bulges) {
@@ -39,6 +24,20 @@ async function applyParams({ canvas, image }, params) {
     }
     image.applyFilters();
   }
+  const originalImage = await cloneImage(image);
+
+  if (params.redGamma) {
+    const red = 0.5 + params.redGamma * 2.5;
+    const green = 0.1 + params.redGamma * (params.yellowGamma || 0) * 1.25;
+    const blue = 0.1;
+    image.filters.push(
+      new fabric.Image.filters.Gamma({
+        gamma: [red, green, blue],
+      })
+    );
+  }
+
+  image.applyFilters();
 
   if (params.preJpeg) {
     for (let i = 0; i < params.preJpeg.iterations; i++) {
@@ -72,9 +71,18 @@ async function applyParams({ canvas, image }, params) {
       new fabric.Image.filters.BlendColor({
         color: "#8888ff",
         mode: "subtract",
-        alpha: params.redBlend,
+        alpha: params.redBlend / 3,
       })
     );
+    for (const dankImage of dankImages) {
+      dankImage.filters.push(
+        new fabric.Image.filters.BlendColor({
+          color: "#8888ff",
+          mode: "subtract",
+          alpha: params.redBlend / nerfFactor,
+        })
+      );
+    }
   }
 
   for (let i = 0; i < params.sharpens || 0; i++) {
@@ -86,26 +94,13 @@ async function applyParams({ canvas, image }, params) {
   }
   image.applyFilters();
 
-  for (const imageParams of params.images) {
-    const dankImage = await pathToImage(imageParams.filepath);
-    const ratio = Math.min(
-      imageParams.dw / dankImage.width,
-      imageParams.dh / dankImage.height
-    );
-    const topOffset =
-      dankImage.width > dankImage.height
-        ? (ratio * (dankImage.width - dankImage.height)) / 2
-        : 0;
-    const leftOffset =
-      dankImage.height > dankImage.width
-        ? (ratio * (dankImage.height - dankImage.width)) / 2
-        : 0;
+  if (params.addOriginal) {
+    originalImage.set({ opacity: params.addOriginal });
+    canvas.add(originalImage);
+  }
 
-    dankImage.scale(ratio).set({
-      top: imageParams.y + topOffset,
-      left: imageParams.x + leftOffset,
-      opacity: imageParams.opacity,
-    });
+  for (const dankImage of dankImages) {
+    dankImage.applyFilters();
     canvas.add(dankImage);
   }
 
@@ -123,35 +118,6 @@ async function applyParams({ canvas, image }, params) {
     );
     image.applyFilters();
   }
+
   return canvas;
-}
-
-module.exports = async function (inputBuffer, params) {
-  const dataUri = bufferToDataUri(inputBuffer);
-  let image = await dataUriToImage(dataUri);
-  const preScaleFactor = 0.5;
-  let canvas = imageToCanvas(image, preScaleFactor);
-  image.scale(preScaleFactor);
-
-  const bulges = getBulges(canvas);
-  const imageRegions = getImageRegions(canvas);
-  const images = getImages(imageRegions);
-
-  canvas = await applyParams(
-    { canvas, image },
-    {
-      ...params,
-      bulges,
-      images,
-    }
-  );
-
-  const postScaleFactor = 1.5;
-  canvas.setZoom(postScaleFactor);
-  canvas.setDimensions({
-    width: canvas.getWidth() * postScaleFactor,
-    height: canvas.getHeight() * postScaleFactor,
-  });
-
-  return canvasToBuffer(canvas);
 };

@@ -3,28 +3,51 @@ const Lambda = require("aws-sdk/clients/lambda");
 
 const { downloadImage, uploadImage, reply } = require("./aws");
 const deepFry = require("./deep_fry");
+const { bufferToCanvas, canvasToBuffer } = require("./transforms");
+const {
+  rainbowSparkle,
+  madSharpen,
+  noisy,
+  washedOut,
+  pick,
+} = require("./random");
+const { getBulges, getImages, getImageRegions } = require("./random_canvas");
 
 const s3Client = new S3({ region: process.env.AWS_REGION });
 const lambdaClient = new Lambda();
 
-const params = {
-  brightness: 0.15,
-  noise: 100,
-  redBlend: 0.25,
-  redGamma: true,
-  preJpeg: {
-    iterations: 8,
-    quality: 0.3,
-  },
-  postJpeg: {
-    iterations: 8,
-    quality: 0.3,
-  },
-};
+function createParams(event, canvas) {
+  const params = pick([rainbowSparkle, madSharpen, noisy, washedOut])();
+
+  const bulges = getBulges(canvas);
+  const imageRegions = getImageRegions(canvas);
+  const images = getImages(imageRegions, params);
+
+  return {
+    ...params,
+    saucy: !!(
+      event.mention.possibly_sensitive || event.target.possibly_sensitive
+    ),
+    bulges,
+    images,
+  };
+}
 
 exports.handler = async (event) => {
   const inputBuffer = await downloadImage(s3Client, event.filename);
-  const outputBuffer = await deepFry(inputBuffer, params);
+  let { canvas, image } = await bufferToCanvas(inputBuffer, 0.5);
+
+  const params = createParams(event, canvas);
+
+  canvas = await deepFry(
+    {
+      canvas,
+      image,
+    },
+    params
+  );
+
+  const outputBuffer = await canvasToBuffer(canvas, 1.5);
 
   const deepFriedFilename = event.filename.replace(/\.png/, "--deepfried.png");
   await uploadImage(s3Client, outputBuffer, deepFriedFilename);

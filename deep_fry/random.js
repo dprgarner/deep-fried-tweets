@@ -18,6 +18,7 @@ exports.rainbowSparkle = () => ({
     iterations: Math.floor(parabolaish() * 5),
     quality: 0.3 + Math.pow(Math.random(), 3) * 0.2,
   },
+  addOriginal: 0.15,
 });
 
 exports.madSharpen = () => ({
@@ -34,6 +35,7 @@ exports.madSharpen = () => ({
     iterations: 8,
     quality: 0.3,
   },
+  addOriginal: 0.1,
 });
 
 exports.noisy = () => ({
@@ -49,6 +51,7 @@ exports.noisy = () => ({
     iterations: 8,
     quality: 0.3,
   },
+  addOriginal: 0.1,
 });
 
 exports.washedOut = () => ({
@@ -67,6 +70,7 @@ exports.washedOut = () => ({
     iterations: 8,
     quality: 0.5,
   },
+  addOriginal: 0.1,
 });
 
 exports.pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
