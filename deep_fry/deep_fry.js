@@ -10,7 +10,6 @@ module.exports = async function applyParams({ canvas, image }, params) {
   for (const imageParams of params.images) {
     dankImages.push(await loadDankImage(imageParams));
   }
-  const nerfFactor = 5;
 
   if (params.bulges && params.bulges.length) {
     for (const bulge of params.bulges) {
@@ -75,6 +74,7 @@ module.exports = async function applyParams({ canvas, image }, params) {
       })
     );
     for (const dankImage of dankImages) {
+      const nerfFactor = 5;
       dankImage.filters.push(
         new fabric.Image.filters.BlendColor({
           color: "#8888ff",

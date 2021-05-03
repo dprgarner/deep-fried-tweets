@@ -10,15 +10,14 @@
 
 ## Screenshot Tweet
 
-- 🅱️ the text
+- Sunglasses/Lazer eyes on Profile pics?
+- 🅱️ the text?
 - Identify places to warp
 
 ## Deep Fry
 
-- Add in daft images
 - Ifunny.co and other obnoxious watermarks?
-- Sunglasses/Lazer eyes on Profile pics?
-- Warp points based on interesting items
+- It's still under-fried, from time to time. Guarantee some frying?
 
 ## Retry
 

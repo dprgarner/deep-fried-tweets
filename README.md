@@ -43,15 +43,14 @@ dynamodb_client.put_item(
 Set up a local Python 3.8 virtual environment, and run:
 
 ```bash
-cd twitter_py
-pip install -r requirements.txt
+pip install -r twitter_py/requirements.txt
 python
 ```
 
 In the python shell:
 
 ```py
-from test import *
+from twitter_py.test import *
 ```
 
 ### screenshot_tweet
@@ -92,7 +91,7 @@ Add the following variables to .env.json file:
 }
 ```
 
-The values of these fields can be found from the stack deployment output variables.
+The values of the AWS-specific fields can be found from the output variables of the stack deployment.
 
 To build and invoke a single Lambda function:
 

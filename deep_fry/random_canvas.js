@@ -150,9 +150,10 @@ const smallImageWeights = {
   ok: 5,
   crying: 5,
   cryingeyesopen: 4,
+  scream: 3,
   b: 3,
+  100: 3,
   flushedface: 2,
-  100: 2,
   fire: 2,
   devil: 2,
   datboi: 1,
@@ -180,9 +181,18 @@ const getRandomSmallImage = ({ saucy }) => {
 };
 
 exports.getImages = (smallImageRegions, params) => {
-  return smallImageRegions.map((imageRegion) => ({
+  const smallestHeight = smallImageRegions.reduce(
+    (acc, x) => Math.min(acc, x.dh),
+    Infinity
+  );
+  const majorImage = getRandomSmallImage(params);
+  const minorImage = getRandomSmallImage(params);
+
+  return smallImageRegions.map((imageRegion, idx) => ({
     ...imageRegion,
-    filepath: `./img/${getRandomSmallImage(params)}.png`,
+    dw: smallestHeight,
+    dh: smallestHeight,
+    filepath: `./img/${idx === 0 ? minorImage : majorImage}.png`,
     opacity: 0.85,
   }));
 };
