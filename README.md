@@ -5,7 +5,7 @@
 Install SAM and Docker, and run the following:
 
 ```bash
-./deep_fry/libs/build.sh
+./deep_fry_libs/build.sh
 sam build --use-container
 sam deploy --guided
 ```
@@ -36,7 +36,7 @@ dynamodb_client.put_item(
 )
 ```
 
-## Manually test the individual functions
+## Manually test the individual functions locally
 
 ### Twitter API
 

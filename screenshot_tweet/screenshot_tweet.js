@@ -91,10 +91,7 @@ module.exports = async (event, { browser, s3Client, lambdaClient }) => {
 
     uploadAndDeepFryPromise = (async () => {
       await uploadScreenshot(s3Client, screenshot, filename);
-      const lambdaEvent = {
-        ...event,
-        filename,
-      };
+      const lambdaEvent = { ...event, filename };
       await deepFry(lambdaClient, lambdaEvent);
     })();
   } finally {

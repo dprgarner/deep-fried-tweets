@@ -39,13 +39,7 @@ exports.handler = async (event) => {
 
   const params = createParams(event, canvas);
 
-  canvas = await deepFry(
-    {
-      canvas,
-      image,
-    },
-    params
-  );
+  canvas = await deepFry({ canvas, image }, params);
 
   const outputBuffer = await canvasToBuffer(canvas, 1.5);
 

@@ -1,3 +1,8 @@
+/**
+ * For testing locally.
+ * `cat ../events/deep_fry.json | node test.js`
+ */
+
 const fs = require("fs");
 const path = require("path");
 const readline = require("readline");
@@ -23,7 +28,7 @@ const {
 const readFile = promisify(fs.readFile);
 const writeFile = promisify(fs.writeFile);
 
-const s3Client = {
+const fakeS3Client = {
   getObject: ({ Key }) => ({
     promise: async () => {
       const Body = await readFile(
@@ -40,7 +45,7 @@ const s3Client = {
   }),
 };
 
-const lambdaClient = {
+const fakeLambdaClient = {
   invoke: (event) => ({
     promise: async () => {
       console.log(event);
@@ -84,7 +89,7 @@ async function test() {
   for (const event of events) {
     console.log("Processing...");
 
-    const inputBuffer = await downloadImage(s3Client, event.filename);
+    const inputBuffer = await downloadImage(fakeS3Client, event.filename);
     let { canvas, image } = await bufferToCanvas(inputBuffer, 0.5);
 
     const originalCanvas = await cloneCanvas(canvas);
@@ -104,9 +109,9 @@ async function test() {
       const outputBuffer = await canvasToBuffer(canvas, 1.5);
       const deepFriedFilename = `${event.filename.slice(-20, -4)}--${i}.png`;
 
-      await uploadImage(s3Client, outputBuffer, deepFriedFilename);
+      await uploadImage(fakeS3Client, outputBuffer, deepFriedFilename);
 
-      await reply(lambdaClient, {
+      await reply(fakeLambdaClient, {
         ...event,
         deep_fried_filename: deepFriedFilename,
       });

@@ -1,3 +1,8 @@
+/**
+ * A test file for trying out screenshotting a tweet locally without having to
+ * build the Lambda each time.
+ */
+
 const fs = require("fs");
 const path = require("path");
 const readline = require("readline");

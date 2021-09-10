@@ -1,3 +1,7 @@
+"""
+A test file for trying out some Twitter API calls locally without requiring a
+Lambda to be built.
+"""
 import json
 import tweepy
 

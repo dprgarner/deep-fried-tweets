@@ -72,6 +72,10 @@ Resources:
       Runtime: nodejs12.x
       Timeout: 20
       MemorySize: 512
+      Environment:
+        Variables:
+          BUCKET_NAME: !Ref DeepFriedBucket
+          REPLY_FUNCTION: !Ref ReplyFunction
       Policies:
         - S3ReadPolicy:
             BucketName: !Ref DeepFriedBucket
@@ -79,10 +83,6 @@ Resources:
             BucketName: !Ref DeepFriedBucket
         - LambdaInvokePolicy:
             FunctionName: !Ref ReplyFunction
-      Environment:
-        Variables:
-          BUCKET_NAME: !Ref DeepFriedBucket
-          REPLY_FUNCTION: !Ref ReplyFunction
 
   ReplyFunction:
     Type: AWS::Serverless::Function
