@@ -9,6 +9,8 @@ const s3Client = new S3({ region: process.env.AWS_REGION });
 const lambdaClient = new Lambda();
 
 exports.handler = async (event) => {
+  console.info("Invoked with event :\n" + JSON.stringify(event, null, 2));
+
   const browser = await chromium.puppeteer.launch({
     args: chromium.args,
     executablePath: await chromium.executablePath,

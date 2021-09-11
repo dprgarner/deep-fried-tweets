@@ -4,6 +4,7 @@
 - Change username
 - Add avatar
 - Add a dank banner of some sort
+- X-ray? https://docs.aws.amazon.com/lambda/latest/dg/nodejs-tracing.html
 
 ## Process Mentions
 

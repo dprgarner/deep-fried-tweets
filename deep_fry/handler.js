@@ -34,6 +34,8 @@ function createParams(event, canvas) {
 }
 
 exports.handler = async (event) => {
+  console.info("Invoked with event :\n" + JSON.stringify(event, null, 2));
+
   const inputBuffer = await downloadImage(s3Client, event.filename);
   let { canvas, image } = await bufferToCanvas(inputBuffer, 0.5);
 

@@ -1,4 +1,5 @@
 import traceback
+import json
 import boto3
 
 from dynamodb import get_since_id, set_since_id, get_twitter_api
@@ -17,6 +18,8 @@ def process_mentions(_event, _context):
     """
     Get the Twitter bot's mentions, and execute lambda handler events for each of them.
     """
+    print("Invoked with event:", json.dumps(_event, indent=2))
+
     since_id = get_since_id(dynamodb_client)
     new_since_id = since_id
     try:
@@ -35,4 +38,6 @@ def reply(_event, _context):
     Replies to the Twitter mention.
     TODO.
     """
+    print("Invoked with event:", json.dumps(_event, indent=2))
+
     return {}
