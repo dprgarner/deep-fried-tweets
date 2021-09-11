@@ -64,16 +64,34 @@ Resources:
         - LambdaInvokePolicy:
             FunctionName: !Ref DeepFryFunction
 
+  # Source: https://serverlessrepo.aws.amazon.com/applications/arn:aws:serverlessrepo:us-east-1:990551184979:applications~lambda-layer-canvas-nodejs
+  NodeCanvasLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: canvas-nodejs
+      Description: canvas@2.8.0
+      ContentUri:
+        Bucket: awsserverlessrepo-changesets-194a7scchwzz0
+        Key: 290634446152/arn:aws:serverlessrepo:us-east-1:990551184979:applications-lambda-layer-canvas-nodejs-versions-2.8.4/3d7f3bad-c925-4564-839d-c94234a1c234
+      CompatibleRuntimes:
+        - nodejs14.x
+      RetentionPolicy: Retain
+      LicenseInfo: MIT
+
   DeepFryFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: deep_fry/
       Handler: handler.handler
-      Runtime: nodejs12.x
+      Runtime: nodejs14.x
       Timeout: 20
       MemorySize: 512
+      Layers:
+        - !Ref NodeCanvasLayer
       Environment:
         Variables:
+          # https://github.com/Automattic/node-canvas/issues/1779#issuecomment-861944060
+          LD_PRELOAD: /var/task/node_modules/canvas/build/Release/libz.so.1
           BUCKET_NAME: !Ref DeepFriedBucket
           REPLY_FUNCTION: !Ref ReplyFunction
       Policies:

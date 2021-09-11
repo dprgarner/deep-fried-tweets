@@ -5,7 +5,6 @@
 Install SAM and Docker, and run the following:
 
 ```bash
-./deep_fry_libs/build.sh
 sam build --use-container
 sam deploy --guided
 ```
@@ -64,7 +63,6 @@ cat ../events/screenshot_tweet.json | node test.js
 ### deep_fry
 
 ```bash
-./deep_fry_libs/build.sh  # If this hasn't been run already
 cd deep_fry
 npm install
 cat ../events/deep_fry.json | node test.js
