@@ -108,6 +108,14 @@ const washedOut = () => ({
   shouldBulge: true,
 });
 
+const shouldDisplayBulges = () => Math.random() > 0.5;
+const shouldDisplayLaserEyes = () => Math.random() > 0.5;
+
+const getTargetProfile = (profileImages) => {
+  const largeProfileImages = profileImages.filter((image) => image.width > 30);
+  return largeProfileImages[largeProfileImages.length - 1];
+};
+
 function createParams(event, canvas) {
   const params = pick([
     rainbowSparkle,
@@ -117,7 +125,32 @@ function createParams(event, canvas) {
     washedOut,
   ])();
 
-  const bulges = params.shouldBulge ? getBulges(canvas) : [];
+  let bulges = params.shouldBulge ? getBulges(canvas) : [];
+  let targetProfile = getTargetProfile(event.profile_images || []);
+
+  let profileImages = [];
+  if (bulges.length && targetProfile && !shouldDisplayBulges()) {
+    // Can't show both, it looks broken
+    if (shouldDisplayLaserEyes()) {
+      bulges = [];
+      profileImages = [
+        {
+          ...targetProfile,
+          zoomFactor: 2,
+          filepath: "./img/lasereyes.png",
+        },
+      ];
+    } else {
+      bulges = [];
+      profileImages = [
+        {
+          ...targetProfile,
+          zoomFactor: 1.25,
+          filepath: "./img/dealwithit.png",
+        },
+      ];
+    }
+  }
 
   const imageRegions = getImageRegions(canvas);
   const images = getImages(imageRegions, params);
@@ -129,6 +162,7 @@ function createParams(event, canvas) {
     ),
     bulges,
     images,
+    profileImages,
   };
 }
 

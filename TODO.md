@@ -8,25 +8,24 @@
 
 ## Process Mentions
 
-- Block-list?
+- Block list?
 - Bad word list?
+- Abuse detection?
 
 ## Screenshot Tweet
 
-- Sunglasses/Laser eyes on Profile pics?
 - 🅱️ the text?
 - Identify places to warp
 
 ## Deep Fry
-
-- It's still under-fried.
-  - Revamp the randomising. Ensure it's over-done rather than risk being under-done.
-  - Crank it up to 11?
-- Bulges aren't working.
-- Images don't seem to align correctly.
 
 ## Reply
 
 - Implement.
 - https://botocore.amazonaws.com/v1/documentation/api/latest/reference/response.html
 - https://docs.tweepy.org/en/latest/api.html#upload-media
+
+## Error-handling
+
+- Emails
+- "Nah man"

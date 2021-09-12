@@ -21,27 +21,6 @@
         }
     },
     {
-        "is_reply": true,
-        "mention": {
-            "id": "1383799706128506889",
-            "user": {
-                "id": "1132582584171544577",
-                "screen_name": "jjverhels"
-            },
-            "text": "@Zuchtkasteel Dank.",
-            "url": "https://www.twitter.com/jjverhels/status/1383799706128506889"
-        },
-        "target": {
-            "id": "1383799211527835651",
-            "user": {
-                "id": "1382224513480454145",
-                "screen_name": "Zuchtkasteel"
-            },
-            "text": "@jjverhels Ok, pezewever.",
-            "url": "https://www.twitter.com/Zuchtkasteel/status/1383799211527835651"
-        }
-    },
-    {
         "is_reply": false,
         "mention": {
             "id": "1383799643398569993",

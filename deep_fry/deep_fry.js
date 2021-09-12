@@ -1,7 +1,12 @@
 const { fabric } = require("fabric");
 
 const initBulgeFilter = require("./bulge");
-const { jpegify, clone, loadDankImage } = require("./transforms");
+const {
+  jpegify,
+  clone,
+  loadDankImage,
+  loadProfileImage,
+} = require("./transforms");
 
 initBulgeFilter();
 
@@ -9,6 +14,11 @@ module.exports = async function applyParams({ canvas, image }, params) {
   const dankImages = [];
   for (const imageParams of params.images) {
     dankImages.push(await loadDankImage(imageParams));
+  }
+
+  const profileImages = [];
+  for (const profileImageParams of params.profileImages) {
+    profileImages.push(await loadProfileImage(profileImageParams));
   }
 
   if (params.bulges && params.bulges.length) {
@@ -126,6 +136,10 @@ module.exports = async function applyParams({ canvas, image }, params) {
   for (const dankImage of dankImages) {
     dankImage.applyFilters();
     canvas.add(dankImage);
+  }
+
+  for (const profileImage of profileImages) {
+    canvas.add(profileImage);
   }
 
   if (params.postJpeg) {

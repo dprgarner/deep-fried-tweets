@@ -19,7 +19,21 @@
             "text": "@DankSinatra06 No.",
             "url": "https://www.twitter.com/nwayne66/status/1383799875993624582"
         },
-        "filename": "2021-04-18T15-42-54-369Z--1383800511007105025.png"
+        "filename": "2021-04-18T15-42-54-369Z--1383800511007105025.png",
+        "profile_images": [
+            {
+                "x": 17,
+                "y": 13,
+                "width": 48,
+                "height": 48
+            },
+            {
+                "x": 17,
+                "y": 90,
+                "width": 48,
+                "height": 48
+            }
+        ]
     },
     {
         "is_reply": true,
@@ -41,7 +55,21 @@
             "text": "@jjverhels Ok, pezewever.",
             "url": "https://www.twitter.com/Zuchtkasteel/status/1383799211527835651"
         },
-        "filename": "2021-04-18T15-42-57-733Z--1383799706128506889.png"
+        "filename": "2021-09-12T19-11-15-234Z--1383799706128506889.png",
+        "profile_images": [
+            {
+                "x": 17,
+                "y": 13,
+                "width": 48,
+                "height": 48
+            },
+            {
+                "x": 17,
+                "y": 90,
+                "width": 48,
+                "height": 48
+            }
+        ]
     },
     {
         "is_reply": false,

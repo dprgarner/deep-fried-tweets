@@ -68,7 +68,7 @@ async function test() {
       image,
     });
 
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 10; i++) {
       canvas = originalCanvas;
       image = originalImage;
 

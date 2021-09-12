@@ -98,3 +98,21 @@ exports.loadDankImage = async (imageParams) => {
   });
   return dankImage;
 };
+
+exports.loadProfileImage = async ({
+  x,
+  y,
+  width,
+  height,
+  zoomFactor,
+  filepath,
+}) => {
+  const img = await exports.pathToImage(filepath);
+  const shiftUp = 0.1;
+  img.scale((zoomFactor * width) / img.width).set({
+    top: y - ((zoomFactor - 1) * height) / 2 - shiftUp * height,
+    left: x - ((zoomFactor - 1) * width) / 2,
+    opacity: 1,
+  });
+  return img;
+};

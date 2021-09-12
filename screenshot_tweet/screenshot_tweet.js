@@ -33,7 +33,7 @@ const retry = async function (gen, timeout, interval = 250) {
 async function waitForIframe(page, target_id) {
   console.log("performing sanity check...");
 
-  const iframe = await retry(async () => {
+  return await retry(async () => {
     const iframe = await page.waitForSelector("iframe", { visible: true });
     const frameContent = await iframe.contentFrame();
     const links = await frameContent.$$eval("[role=link]", (els) =>
@@ -41,15 +41,28 @@ async function waitForIframe(page, target_id) {
     );
     for (const link of links) {
       if (link.includes(`/status/${target_id}`)) {
+        console.log("sanity check passed.");
         return iframe;
       }
     }
     throw new Error("Could not find link with ID", target_id);
   }, 1500);
-
-  console.log("sanity check passed.");
-  return iframe;
 }
+
+const getProfileImages = async (iframe) => {
+  const frameContent = await iframe.contentFrame();
+  const profileImages = await frameContent.$$eval(
+    'img[src*="profile_images"]',
+    (imgs) =>
+      imgs.map((img) => ({
+        x: img.x,
+        y: img.y,
+        width: img.width,
+        height: img.height,
+      }))
+  );
+  return profileImages;
+};
 
 const getFilename = (mention_id) =>
   `${new Date().toISOString().replace(/(\.|:)/g, "-")}--${mention_id}.png`;
@@ -83,6 +96,7 @@ module.exports = async (event, { browser, s3Client, lambdaClient }) => {
     await navigateToTweet(page, event.target.url);
 
     const frame = await waitForIframe(page, event.target.id);
+    const profileImages = await getProfileImages(frame);
 
     console.log("Taking screenshot...");
     const screenshot = await frame.screenshot();
@@ -91,7 +105,7 @@ module.exports = async (event, { browser, s3Client, lambdaClient }) => {
 
     uploadAndDeepFryPromise = (async () => {
       await uploadScreenshot(s3Client, screenshot, filename);
-      const lambdaEvent = { ...event, filename };
+      const lambdaEvent = { ...event, filename, profile_images: profileImages };
       await deepFry(lambdaClient, lambdaEvent);
     })();
   } finally {
