@@ -99,6 +99,8 @@ sam build --use-container ProcessMentionsFunction && sam local invoke ProcessMen
 
 This will run the built version of the lambda in `./aws-sam` in a Docker container emulating the Lambda environment. The lambda function will need rebuilding on changes.
 
+**The `DeepFry` lambda does not work with `sam local invoke`**. This is because it uses a Layer hosted on an S3 bucket, which cannot be invoked locally in the AWS Lambda emulator environment.
+
 To prevent the locally-run lambdas from invoking downstream lambdas, set `DRY_RUN` to `true` in the env variables.
 
 ## Cleanup

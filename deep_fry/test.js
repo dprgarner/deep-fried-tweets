@@ -9,21 +9,9 @@ const readline = require("readline");
 const { promisify } = require("util");
 
 const { downloadImage, uploadImage, reply } = require("./aws");
+const createParams = require("./create_params");
 const deepFry = require("./deep_fry");
-const {
-  rainbowSparkle,
-  madSharpen,
-  noisy,
-  washedOut,
-  pick,
-} = require("./random");
-const { getImageRegions, getImages, getBulges } = require("./random_canvas");
-const {
-  bufferToCanvas,
-  canvasToBuffer,
-  cloneImage,
-  cloneCanvas,
-} = require("./transforms");
+const { bufferToCanvas, canvasToBuffer, clone } = require("./transforms");
 
 const readFile = promisify(fs.readFile);
 const writeFile = promisify(fs.writeFile);
@@ -65,23 +53,6 @@ async function getInput() {
   return lines.join("\n");
 }
 
-function createParams(event, canvas) {
-  const params = pick([rainbowSparkle, madSharpen, noisy, washedOut])();
-
-  const bulges = getBulges(canvas);
-  const imageRegions = getImageRegions(canvas);
-  const images = getImages(imageRegions, params);
-
-  return {
-    ...params,
-    saucy: !!(
-      event.mention.possibly_sensitive || event.target.possibly_sensitive
-    ),
-    bulges,
-    images,
-  };
-}
-
 async function test() {
   const input = JSON.parse(await getInput());
   const events = input.length ? input : [input];
@@ -92,17 +63,20 @@ async function test() {
     const inputBuffer = await downloadImage(fakeS3Client, event.filename);
     let { canvas, image } = await bufferToCanvas(inputBuffer, 0.5);
 
-    const originalCanvas = await cloneCanvas(canvas);
-    const originalImage = await cloneImage(image);
+    const { canvas: originalCanvas, image: originalImage } = await clone({
+      canvas,
+      image,
+    });
 
-    for (let i = 0; i < 1; i++) {
+    for (let i = 0; i < 3; i++) {
+      canvas = originalCanvas;
+      image = originalImage;
+
       const params = createParams(event, canvas);
+      console.log(JSON.stringify(params, null, 2));
 
       canvas = await deepFry(
-        {
-          canvas: await cloneCanvas(originalCanvas),
-          image: await cloneImage(originalImage),
-        },
+        await clone({ canvas: originalCanvas, image: originalImage }),
         params
       );
 

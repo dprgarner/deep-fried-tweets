@@ -1,5 +1,5 @@
 exports.downloadImage = async (s3Client, filename) => {
-  console.log("Downloading image from S3:", filename);
+  console.info("Downloading image from S3:", filename);
 
   const response = await s3Client
     .getObject({
@@ -12,7 +12,7 @@ exports.downloadImage = async (s3Client, filename) => {
 };
 
 exports.uploadImage = (s3Client, imageBuffer, filename) => {
-  console.log("Uploading image to S3:", filename);
+  console.info("Uploading image to S3:", filename);
 
   return s3Client
     .putObject({

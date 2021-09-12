@@ -64,19 +64,18 @@ exports.jpegify = async (canvas, quality) => {
   return image;
 };
 
-exports.cloneImage = (image) =>
+const cloneImage = (image) =>
   new Promise((res) => {
     image.cloneAsImage((newImage) => {
       res(newImage);
     });
   });
 
-exports.cloneCanvas = (canvas) =>
-  new Promise((res) => {
-    canvas.clone((newCanvas) => {
-      res(newCanvas);
-    });
-  });
+exports.clone = async ({ image }) => {
+  const newImage = await cloneImage(image);
+  const newCanvas = exports.imageToCanvas(newImage, 1);
+  return { canvas: newCanvas, image: newImage };
+};
 
 exports.loadDankImage = async (imageParams) => {
   const dankImage = await exports.pathToImage(imageParams.filepath);

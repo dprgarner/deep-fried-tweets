@@ -1,7 +1,7 @@
 const { fabric } = require("fabric");
 
 const initBulgeFilter = require("./bulge");
-const { jpegify, cloneImage, loadDankImage } = require("./transforms");
+const { jpegify, clone, loadDankImage } = require("./transforms");
 
 initBulgeFilter();
 
@@ -23,11 +23,14 @@ module.exports = async function applyParams({ canvas, image }, params) {
     }
     image.applyFilters();
   }
-  const originalImage = await cloneImage(image);
 
-  if (params.redGamma) {
-    const red = 0.5 + params.redGamma * 2.5;
-    const green = 0.1 + params.redGamma * (params.yellowGamma || 0) * 1.25;
+  const originalImage = (await clone({ canvas, image })).image;
+
+  if (params.redGamma || params.yellowGamma) {
+    const red =
+      0.5 + (params.redGamma || 0) * 2.5 + (params.yellowGamma || 0) * 1.25;
+    const green =
+      0.1 + (params.redGamma || 0) * 1.25 + (params.yellowGamma || 0) * 1.25;
     const blue = 0.1;
     image.filters.push(
       new fabric.Image.filters.Gamma({
@@ -65,6 +68,7 @@ module.exports = async function applyParams({ canvas, image }, params) {
       })
     );
   }
+
   if (params.redBlend) {
     image.filters.push(
       new fabric.Image.filters.BlendColor({
@@ -80,6 +84,26 @@ module.exports = async function applyParams({ canvas, image }, params) {
           color: "#8888ff",
           mode: "subtract",
           alpha: params.redBlend / nerfFactor,
+        })
+      );
+    }
+  }
+
+  if (params.yellowBlend) {
+    image.filters.push(
+      new fabric.Image.filters.BlendColor({
+        color: "#0000ff",
+        mode: "subtract",
+        alpha: params.yellowBlend / 3,
+      })
+    );
+    for (const dankImage of dankImages) {
+      const nerfFactor = 5;
+      dankImage.filters.push(
+        new fabric.Image.filters.BlendColor({
+          color: "#0000ff",
+          mode: "subtract",
+          alpha: params.yellowBlend / nerfFactor,
         })
       );
     }
