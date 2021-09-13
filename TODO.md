@@ -1,6 +1,5 @@
 # TODO
 
-- Check it all works e2e
 - Change username
 - Add avatar
 - Add a dank banner of some sort
@@ -14,16 +13,13 @@
 
 ## Screenshot Tweet
 
+- Switch to this more stable approach: https://docs.tweepy.org/en/latest/api.html#tweepy.API.get_oembed
 - 🅱️ the text?
 - Identify places to warp
 
 ## Deep Fry
 
 ## Reply
-
-- Implement.
-- https://botocore.amazonaws.com/v1/documentation/api/latest/reference/response.html
-- https://docs.tweepy.org/en/latest/api.html#upload-media
 
 ## Error-handling
 

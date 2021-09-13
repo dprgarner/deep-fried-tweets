@@ -145,7 +145,7 @@ function createParams(event, canvas) {
       profileImages = [
         {
           ...targetProfile,
-          zoomFactor: 1.25,
+          zoomFactor: 1.3,
           filepath: "./img/dealwithit.png",
         },
       ];

@@ -69,9 +69,12 @@ def process_mention(twitter_api, lambda_client, mention):
     else:
         target = mention
 
+    if target.user.id_str == os.getenv("BOT_USER_ID"):
+        print("Bot should never deep fry its own tweet - skipping.")
+        return
+
     print("attempting screenshot...")
     lambda_event = to_event(target, mention)
-
     lambda_client.invoke(
         FunctionName=os.getenv("SCREENSHOT_TWEET_FUNCTION"),
         InvocationType="DryRun" if DRY_RUN else "Event",

@@ -3,6 +3,12 @@ Transform: AWS::Serverless-2016-10-31
 Description: |
   The SAM Template for Deep Frying Tweets. Extra Crispy.
 
+Parameters:
+  BotUserId:
+    Type: String
+    Default: "1381340743877410819"
+    Description: The User ID of the Deep Fried Tweets bot
+
 Resources:
   DeepFriedTable:
     Type: AWS::Serverless::SimpleTable
@@ -40,6 +46,7 @@ Resources:
         Variables:
           TABLE_NAME: !Ref DeepFriedTable
           SCREENSHOT_TWEET_FUNCTION: !Ref ScreenshotTweetFunction
+          BOT_USER_ID: !Ref BotUserId
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref DeepFriedTable
