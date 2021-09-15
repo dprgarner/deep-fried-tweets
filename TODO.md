@@ -1,9 +1,7 @@
 # TODO
 
-- Change username
-- Add avatar
-- Add a dank banner of some sort
 - X-ray? https://docs.aws.amazon.com/lambda/latest/dg/nodejs-tracing.html
+- A thorough test. Glob a load of tweets and check they're all good enough.
 
 ## Process Mentions
 
