@@ -21,7 +21,7 @@ def process_mentions(_event, _context):
     """
     Get the Twitter bot's mentions, and execute lambda handler events for each of them.
     """
-    print("Invoked with event:", json.dumps(_event, indent=2))
+    print("Invoked with event:", json.dumps(_event))
 
     since_id = get_since_id(dynamodb_client)
     new_since_id = since_id
@@ -40,7 +40,7 @@ def reply(_event, _context):
     """
     Replies to the Twitter mention.
     """
-    print("Invoked with event:", json.dumps(_event, indent=2))
+    print("Invoked with event:", json.dumps(_event))
 
     with io.BytesIO(b"") as image_file:
         print("Downloading deep-fried image...")

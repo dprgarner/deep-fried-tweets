@@ -73,7 +73,7 @@ async function test() {
       image = originalImage;
 
       const params = createParams(event, canvas);
-      console.log(JSON.stringify(params, null, 2));
+      console.log("Parameters:\n ", JSON.stringify(params, null, 2));
 
       canvas = await deepFry(
         await clone({ canvas: originalCanvas, image: originalImage }),
