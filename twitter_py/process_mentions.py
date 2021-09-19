@@ -55,10 +55,6 @@ def _parse_status(status):
             "screen_name": status.user.screen_name,
         },
         "text": status.text,
-        "url": "https://www.twitter.com/{}/status/{}".format(
-            status.user.screen_name,
-            status.id_str,
-        ),
         "possibly_sensitive": getattr(status, "possibly_sensitive", False),
     }
     assert parsed["user"]["id"]

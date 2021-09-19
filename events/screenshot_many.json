@@ -21,27 +21,6 @@
         }
     },
     {
-        "is_reply": false,
-        "mention": {
-            "id": "1383799643398569993",
-            "user": {
-                "id": "1271992787815337984",
-                "screen_name": "dafulove_"
-            },
-            "text": "rock metal dank memes mp4 rar https://t.co/9VXZT3ZvT3",
-            "url": "https://www.twitter.com/dafulove_/status/1383799643398569993"
-        },
-        "target": {
-            "id": "1383799643398569993",
-            "user": {
-                "id": "1271992787815337984",
-                "screen_name": "dafulove_"
-            },
-            "text": "rock metal dank memes mp4 rar https://t.co/9VXZT3ZvT3",
-            "url": "https://www.twitter.com/dafulove_/status/1383799643398569993"
-        }
-    },
-    {
         "is_reply": true,
         "mention": {
             "id": "1383799457762869250",
@@ -60,69 +39,6 @@
             },
             "text": "@_ButterflyStep Thanks! I just changed it! I really like how it looks now!",
             "url": "https://www.twitter.com/flingsmashswit2/status/1383799099946717190"
-        }
-    },
-    {
-        "is_reply": true,
-        "mention": {
-            "id": "1383799443888041986",
-            "user": {
-                "id": "1251559126410432512",
-                "screen_name": "Thea12314"
-            },
-            "text": "@Bontrop @FieldlabEvents @kobus5 @jacvre @_CCMO Dank",
-            "url": "https://www.twitter.com/Thea12314/status/1383799443888041986"
-        },
-        "target": {
-            "id": "1383780447189041162",
-            "user": {
-                "id": "3148384150",
-                "screen_name": "Bontrop"
-            },
-            "text": "@Thea12314 @FieldlabEvents @kobus5 @jacvre @_CCMO De enige goedkeuring die er is is afgegeven door het ministerie v\u2026 https://t.co/9oF2pgnLXf",
-            "url": "https://www.twitter.com/Bontrop/status/1383780447189041162"
-        }
-    },
-    {
-        "is_reply": true,
-        "mention": {
-            "id": "1383798960351895564",
-            "user": {
-                "id": "2789779514",
-                "screen_name": "polearmguy"
-            },
-            "text": "@sctrojans97 @dank_adyrov @NYPDnews He was scared for his life. Reacted badly. No one was hurt. Why prosecute? To what end?",
-            "url": "https://www.twitter.com/polearmguy/status/1383798960351895564"
-        },
-        "target": {
-            "id": "1383798200100745226",
-            "user": {
-                "id": "394273162",
-                "screen_name": "sctrojans97"
-            },
-            "text": "@polearmguy @dank_adyrov @NYPDnews It is worth investigating. But that idiot -- who had no license and registration\u2026 https://t.co/kj1ZJOyhLx",
-            "url": "https://www.twitter.com/sctrojans97/status/1383798200100745226"
-        }
-    },
-    {
-        "is_reply": true,
-        "mention": {
-            "id": "1383798592167579671",
-            "user": {
-                "id": "329269357",
-                "screen_name": "Ruud_tweet"
-            },
-            "text": "@luccamerel Dank u ,dank u \ud83d\ude0a",
-            "url": "https://www.twitter.com/Ruud_tweet/status/1383798592167579671"
-        },
-        "target": {
-            "id": "1383780930213466120",
-            "user": {
-                "id": "1702166828",
-                "screen_name": "luccamerel"
-            },
-            "text": "@Ruud_tweet \ud83d\udc4d Netjes!",
-            "url": "https://www.twitter.com/luccamerel/status/1383780930213466120"
         }
     },
     {

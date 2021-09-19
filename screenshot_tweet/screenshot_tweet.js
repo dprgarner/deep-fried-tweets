@@ -1,9 +1,7 @@
 const DRY_RUN = process.env.DRY_RUN === "true";
 
-async function navigateToTweet(page, tweetUrl) {
-  const pageUrl = `https://publish.twitter.com/?query=${encodeURIComponent(
-    tweetUrl
-  )}&widget=Tweet`;
+async function navigateToTweet(page, tweetId) {
+  const pageUrl = `data:text/html,<html><body><div id="tweet-container"></div><script src="https://platform.twitter.com/widgets.js" charset="utf-8"></script><script>twttr.widgets.createTweet("${tweetId}", document.getElementById("tweet-container"), { theme: "light", width: 550, dnt: true });</script></body></html>`;
 
   await page.setViewport({
     width: 600,
@@ -11,7 +9,7 @@ async function navigateToTweet(page, tweetUrl) {
     isMobile: true,
     deviceScaleFactor: 2,
   });
-  console.log("Loading tweet: ", tweetUrl);
+  console.log("Loading tweet ID: ", tweetId);
   console.log("Page URL: ", pageUrl);
 
   await page.goto(pageUrl, { waitUntil: "networkidle2" });
@@ -34,7 +32,10 @@ async function waitForIframe(page, target_id) {
   console.log("performing sanity check...");
 
   return await retry(async () => {
-    const iframe = await page.waitForSelector("iframe", { visible: true });
+    const iframe = await page.waitForSelector("iframe", {
+      visible: true,
+      timeout: 2000,
+    });
     const frameContent = await iframe.contentFrame();
     const links = await frameContent.$$eval("[role=link]", (els) =>
       els.map((el) => el.getAttribute("href"))
@@ -48,6 +49,34 @@ async function waitForIframe(page, target_id) {
     throw new Error("Could not find link with ID", target_id);
   }, 1500);
 }
+
+const trimLinks = async (iframe) => {
+  try {
+    const frameContent = await iframe.contentFrame();
+    const height = await frameContent.evaluate(
+      // eslint-disable-next-line no-undef
+      () => document.documentElement.clientHeight
+    );
+    await frameContent.$$eval('[aria-label="Share"]', (els) =>
+      els.forEach((el) => el.remove())
+    );
+    await frameContent.$$eval('[role="link"]', (els) =>
+      els
+        .filter((el) =>
+          (el.getAttribute("href") || "").includes(`/intent/tweet`)
+        )
+        .forEach((el) => el.parentElement.remove())
+    );
+    await frameContent.waitForFunction(
+      // eslint-disable-next-line no-undef
+      (height) => document.documentElement.clientHeight < height,
+      { timeout: 5000 },
+      height
+    );
+  } catch (e) {
+    console.error("Could not trim links:", e);
+  }
+};
 
 const getProfileImages = async (iframe) => {
   const frameContent = await iframe.contentFrame();
@@ -93,9 +122,10 @@ module.exports = async (event, { browser, s3Client, lambdaClient }) => {
   let uploadAndDeepFryPromise;
 
   try {
-    await navigateToTweet(page, event.target.url);
+    await navigateToTweet(page, event.target.id);
 
     const frame = await waitForIframe(page, event.target.id);
+    await trimLinks(frame);
     const profileImages = await getProfileImages(frame);
 
     console.log("Taking screenshot...");
