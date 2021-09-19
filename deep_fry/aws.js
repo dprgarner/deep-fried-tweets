@@ -33,3 +33,12 @@ exports.reply = (lambdaClient, lambdaEvent) =>
       Payload: JSON.stringify(lambdaEvent),
     })
     .promise();
+
+exports.apologise = (lambdaClient, lambdaEvent) =>
+  lambdaClient
+    .invoke({
+      FunctionName: process.env.APOLOGISE_FUNCTION,
+      InvocationType: DRY_RUN ? "DryRun" : "Event",
+      Payload: JSON.stringify(lambdaEvent),
+    })
+    .promise();

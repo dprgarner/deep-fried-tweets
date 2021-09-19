@@ -65,11 +65,14 @@ Resources:
         Variables:
           BUCKET_NAME: !Ref DeepFriedBucket
           DEEP_FRY_FUNCTION: !Ref DeepFryFunction
+          APOLOGISE_FUNCTION: !Ref ApologiseFunction
       Policies:
         - S3WritePolicy:
             BucketName: !Ref DeepFriedBucket
         - LambdaInvokePolicy:
             FunctionName: !Ref DeepFryFunction
+        - LambdaInvokePolicy:
+            FunctionName: !Ref ApologiseFunction
 
   # Source: https://serverlessrepo.aws.amazon.com/applications/arn:aws:serverlessrepo:us-east-1:990551184979:applications~lambda-layer-canvas-nodejs
   NodeCanvasLayer:
@@ -101,6 +104,7 @@ Resources:
           LD_PRELOAD: /var/task/node_modules/canvas/build/Release/libz.so.1
           BUCKET_NAME: !Ref DeepFriedBucket
           REPLY_FUNCTION: !Ref ReplyFunction
+          APOLOGISE_FUNCTION: !Ref ApologiseFunction
       Policies:
         - S3ReadPolicy:
             BucketName: !Ref DeepFriedBucket
@@ -108,6 +112,8 @@ Resources:
             BucketName: !Ref DeepFriedBucket
         - LambdaInvokePolicy:
             FunctionName: !Ref ReplyFunction
+        - LambdaInvokePolicy:
+            FunctionName: !Ref ApologiseFunction
 
   ReplyFunction:
     Type: AWS::Serverless::Function
@@ -123,6 +129,22 @@ Resources:
       Policies:
         - S3ReadPolicy:
             BucketName: !Ref DeepFriedBucket
+        - DynamoDBCrudPolicy:
+            TableName: !Ref DeepFriedTable
+        - LambdaInvokePolicy:
+            FunctionName: !Ref ApologiseFunction
+
+  ApologiseFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: twitter_py/
+      Handler: handlers.apologise
+      Runtime: python3.8
+      Timeout: 10
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref DeepFriedTable
+      Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref DeepFriedTable
 
@@ -142,3 +164,6 @@ Outputs:
   ReplyFunction:
     Description: Name of the reply function
     Value: !Ref ReplyFunction
+  ApologiseFunction:
+    Description: Name of the apologise function
+    Value: !Ref ApologiseFunction

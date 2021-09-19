@@ -117,6 +117,15 @@ const deepFry = (lambdaClient, lambdaEvent) =>
     })
     .promise();
 
+const apologise = (lambdaClient, lambdaEvent) =>
+  lambdaClient
+    .invoke({
+      FunctionName: process.env.APOLOGISE_FUNCTION,
+      InvocationType: DRY_RUN ? "DryRun" : "Event",
+      Payload: JSON.stringify(lambdaEvent),
+    })
+    .promise();
+
 module.exports = async (event, { browser, s3Client, lambdaClient }) => {
   const page = await browser.newPage();
   let uploadAndDeepFryPromise;
@@ -138,6 +147,16 @@ module.exports = async (event, { browser, s3Client, lambdaClient }) => {
       const lambdaEvent = { ...event, filename, profile_images: profileImages };
       await deepFry(lambdaClient, lambdaEvent);
     })();
+  } catch (e) {
+    console.error(e);
+    try {
+      await apologise(lambdaClient, {
+        ...event,
+        error: e.toString(),
+      });
+    } catch (e) {
+      console.error("Failed to apologise:", e);
+    }
   } finally {
     const browserClosePromise = browser.close();
 
