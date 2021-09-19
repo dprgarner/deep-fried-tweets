@@ -1,7 +1,9 @@
+from random import choice
 import io
+import json
 import os
 import traceback
-import json
+
 import boto3
 
 from dynamodb import get_since_id, set_since_id, get_twitter_api
@@ -28,12 +30,23 @@ def process_mentions(_event, _context):
     try:
         for mention in get_mentions_since(twitter_api, since_id):
             try:
-                process_mention(twitter_api, lambda_client, mention)
+                process_mention(twitter_api, lambda_client, dynamodb_client, mention)
             except Exception as e:
                 traceback.print_exc()
             new_since_id = mention.id_str
     finally:
         set_since_id(dynamodb_client, new_since_id)
+
+
+ACKNOWLEDGEMENTS = [
+    "👌",
+    "Extra cris🅱️y",
+    "Extra crispy 👌",
+    "Perfect 👌",
+    "Here you go",
+    "🅱️eautiful",
+    "Beautiful",
+]
 
 
 def reply(_event, _context):
@@ -58,7 +71,7 @@ def reply(_event, _context):
         )
 
         print("Uploaded image to Twitter. Updating status...")
-        acknowledgement = "👌"
+        acknowledgement = choice(ACKNOWLEDGEMENTS)
         possibly_sensitive = (
             _event["target"]["possibly_sensitive"]
             or _event["mention"]["possibly_sensitive"]

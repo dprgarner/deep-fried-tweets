@@ -1,7 +1,9 @@
+from datetime import datetime, timezone, timedelta
 import json
 import os
-
 import tweepy
+
+from dynamodb import get_rap_sheet, add_mention_to_rap_sheet
 
 DRY_RUN = os.getenv("DRY_RUN") == "true"
 
@@ -17,8 +19,28 @@ def get_mentions_since(twitter_api, since_id):
         yield status
 
 
+def _warn_user(twitter_api, status):
+    warning = "chill out man"
+    twitter_api.update_status(
+        "@{} {}".format(status.user.screen_name, warning),
+        in_reply_to_status_id=status.id_str,
+    )
+
+
+def _block_user(twitter_api, status):
+    twitter_api.create_block(user_id=status.user.id_str, skip_status=True)
+
+
 def _is_retweet(status):
     return bool(getattr(status, "retweeted_status", None))
+
+
+def _should_warn(rap_sheet):
+    return len(rap_sheet["recent_mentions"]) >= 15
+
+
+def _should_block(rap_sheet):
+    return len(rap_sheet["recent_mentions"]) >= 20
 
 
 def _is_reply(status):
@@ -52,11 +74,25 @@ def to_event(target, mention):
     }
 
 
-def process_mention(twitter_api, lambda_client, mention):
+def process_mention(twitter_api, lambda_client, dynamodb_client, mention):
     print("Found mention:", mention.id_str)
 
     if _is_retweet(mention):
         print("Tweet is a retweet - skipping.")
+        return
+
+    rap_sheet_cutoff = datetime.now(timezone.utc) - timedelta(days=1)
+    rap_sheet = get_rap_sheet(dynamodb_client, mention.user.id_str, rap_sheet_cutoff)
+    add_mention_to_rap_sheet(dynamodb_client, rap_sheet)
+
+    if _should_block(rap_sheet):
+        print("User is being far too spammy - just block them")
+        _block_user(twitter_api, mention)
+        return
+
+    if _should_warn(rap_sheet):
+        print("User is being a little bit too spammy - sending verbal warning")
+        _warn_user(twitter_api, mention)
         return
 
     if _is_reply(mention):
