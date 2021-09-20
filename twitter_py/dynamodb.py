@@ -49,8 +49,8 @@ def get_twitter_api(dynamodb_client):
     return tweepy.API(auth)
 
 
-def get_rap_sheet(dynamodb_client, user_id, cutoff):
-    id_ = "rap_sheet:{}".format(user_id)
+def get_rap_sheet(dynamodb_client, user, cutoff):
+    id_ = "rap_sheet:{}".format(user.id_str)
     rap_sheet_response = dynamodb_client.get_item(
         TableName=os.getenv("TABLE_NAME"),
         Key={"id": {"S": id_}},
@@ -68,7 +68,7 @@ def get_rap_sheet(dynamodb_client, user_id, cutoff):
     }
 
 
-def add_mention_to_rap_sheet(dynamodb_client, rap_sheet):
+def update_rap_sheet(dynamodb_client, rap_sheet, user):
     current_time = datetime.now(timezone.utc)
     attribute_updates = {
         "recent_mentions": {
@@ -80,6 +80,7 @@ def add_mention_to_rap_sheet(dynamodb_client, rap_sheet):
             },
             "Action": "PUT",
         },
+        "screen_name": {"Value": {"S": user.screen_name}},
     }
     dynamodb_client.update_item(
         TableName=os.getenv("TABLE_NAME"),

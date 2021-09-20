@@ -3,7 +3,7 @@ import json
 import os
 import tweepy
 
-from dynamodb import get_rap_sheet, add_mention_to_rap_sheet
+from dynamodb import get_rap_sheet, update_rap_sheet
 
 DRY_RUN = os.getenv("DRY_RUN") == "true"
 
@@ -78,8 +78,8 @@ def process_mention(twitter_api, lambda_client, dynamodb_client, mention):
         return
 
     rap_sheet_cutoff = datetime.now(timezone.utc) - timedelta(days=1)
-    rap_sheet = get_rap_sheet(dynamodb_client, mention.user.id_str, rap_sheet_cutoff)
-    add_mention_to_rap_sheet(dynamodb_client, rap_sheet)
+    rap_sheet = get_rap_sheet(dynamodb_client, mention.user, rap_sheet_cutoff)
+    update_rap_sheet(dynamodb_client, rap_sheet, mention.user)
 
     if _should_block(rap_sheet):
         print("User is being far too spammy - just block them")

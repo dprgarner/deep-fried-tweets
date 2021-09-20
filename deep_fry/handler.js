@@ -34,6 +34,7 @@ exports.handler = async (event) => {
       deep_fried_filename: deepFriedFilename,
     });
   } catch (e) {
+    console.error(e);
     await apologise(lambdaClient, {
       ...event,
       error: e.toString(),
