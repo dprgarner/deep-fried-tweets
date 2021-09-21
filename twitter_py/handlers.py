@@ -25,6 +25,9 @@ def tweet_apology(id_, screen_name):
             "@{} {}".format(screen_name, "Bot's broken"),
             in_reply_to_status_id=id_,
         )
+        twitter_api.send_direct_message(
+            os.getenv("MAINTAINER_USER_ID"), "Bot error -- status ID: {}".format(id_)
+        )
     except Exception as e:
         print("Failed to tweet apology")
         traceback.print_exc()

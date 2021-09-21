@@ -9,6 +9,11 @@ Parameters:
     Default: "1381340743877410819"
     Description: The User ID of the Deep Fried Tweets bot
 
+  MaintainerUserId:
+    Type: String
+    Default: "3122582651"
+    Description: My Twitter account's user ID.
+
 Resources:
   DeepFriedTable:
     Type: AWS::Serverless::SimpleTable
@@ -47,6 +52,7 @@ Resources:
           TABLE_NAME: !Ref DeepFriedTable
           SCREENSHOT_TWEET_FUNCTION: !Ref ScreenshotTweetFunction
           BOT_USER_ID: !Ref BotUserId
+          MAINTAINER_USER_ID: !Ref MaintainerUserId
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref DeepFriedTable
@@ -126,6 +132,7 @@ Resources:
         Variables:
           BUCKET_NAME: !Ref DeepFriedBucket
           TABLE_NAME: !Ref DeepFriedTable
+          MAINTAINER_USER_ID: !Ref MaintainerUserId
       Policies:
         - S3ReadPolicy:
             BucketName: !Ref DeepFriedBucket
@@ -144,6 +151,7 @@ Resources:
       Environment:
         Variables:
           TABLE_NAME: !Ref DeepFriedTable
+          MAINTAINER_USER_ID: !Ref MaintainerUserId
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref DeepFriedTable

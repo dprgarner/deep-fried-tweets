@@ -103,10 +103,16 @@ This will run the built version of the lambda in `./aws-sam` in a Docker contain
 
 To prevent the locally-run lambdas from invoking downstream lambdas, set `DRY_RUN` to `true` in the env variables.
 
+## Get logs
+
+```
+sam logs -n ReplyFunction  --stack-name deep-fried-tweets
+```
+
 ## Cleanup
 
 To delete the sample application that you created, use the AWS CLI. Assuming you used your project name for the stack name, you can run the following:
 
 ```bash
-aws cloudformation delete-stack --stack-name sam-app
+aws cloudformation delete-stack --stack-name deep-fried-tweets
 ```
