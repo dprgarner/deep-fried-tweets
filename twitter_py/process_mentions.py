@@ -31,7 +31,7 @@ def _block_user(twitter_api, status):
     twitter_api.create_block(user_id=status.user.id_str, skip_status=True)
 
 
-def _is_retweet(status):
+def is_retweet(status):
     return bool(getattr(status, "retweeted_status", None))
 
 
@@ -43,7 +43,7 @@ def _should_block(rap_sheet):
     return len(rap_sheet["recent_mentions"]) >= 20
 
 
-def _is_reply(status):
+def is_reply(status):
     return bool(getattr(status, "in_reply_to_status_id", None))
 
 
@@ -64,7 +64,7 @@ def _parse_status(status):
 
 def to_event(target, mention):
     return {
-        "is_reply": _is_reply(mention),
+        "is_reply": is_reply(mention),
         "mention": _parse_status(mention),
         "target": _parse_status(target),
     }
@@ -73,7 +73,7 @@ def to_event(target, mention):
 def process_mention(twitter_api, lambda_client, dynamodb_client, mention):
     print("Found mention:", mention.id_str)
 
-    if _is_retweet(mention):
+    if is_retweet(mention):
         print("Tweet is a retweet - skipping.")
         return
 
@@ -91,7 +91,7 @@ def process_mention(twitter_api, lambda_client, dynamodb_client, mention):
         _warn_user(twitter_api, mention)
         return
 
-    if _is_reply(mention):
+    if is_reply(mention):
         print("mention is a reply - looking up target")
         target = twitter_api.get_status(
             id=mention.in_reply_to_status_id_str,

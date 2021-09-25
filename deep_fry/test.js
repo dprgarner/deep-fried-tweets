@@ -33,10 +33,15 @@ const fakeS3Client = {
   }),
 };
 
+let replyEvents = [];
 const fakeLambdaClient = {
   invoke: (event) => ({
     promise: async () => {
       console.log(event);
+      const payload = JSON.parse(event.Payload);
+      if (!payload.error) {
+        replyEvents.push(payload);
+      }
     },
   }),
 };
@@ -68,7 +73,7 @@ async function test() {
       image,
     });
 
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 1; i++) {
       canvas = originalCanvas;
       image = originalImage;
 
@@ -81,7 +86,7 @@ async function test() {
       );
 
       const outputBuffer = await canvasToBuffer(canvas, 1.5);
-      const deepFriedFilename = `${event.filename.slice(-20, -4)}--${i}.png`;
+      const deepFriedFilename = `${event.filename.slice(0, -4)}--${i}.png`;
 
       await uploadImage(fakeS3Client, outputBuffer, deepFriedFilename);
 
@@ -91,6 +96,11 @@ async function test() {
       });
     }
   }
+
+  await writeFile(
+    path.join(__dirname, "..", "events", "reply_gen.json"),
+    JSON.stringify(replyEvents, null, 2)
+  );
 }
 
 test();

@@ -43,13 +43,14 @@ Set up a local Python 3.8 virtual environment, and run:
 
 ```bash
 pip install -r twitter_py/requirements.txt
+cd twitter_py
 python
 ```
 
 In the python shell:
 
 ```py
-from twitter_py.test import *
+from test import *
 ```
 
 ### screenshot_tweet
@@ -102,6 +103,12 @@ This will run the built version of the lambda in `./aws-sam` in a Docker contain
 **The `DeepFry` lambda does not work with `sam local invoke`**. This is because it uses a Layer hosted on an S3 bucket, which cannot be invoked locally in the AWS Lambda emulator environment.
 
 To prevent the locally-run lambdas from invoking downstream lambdas, set `DRY_RUN` to `true` in the env variables.
+
+## Grab a bunch of random tweets and deep-fry them without uploading them anywhere
+
+```bash
+./e2e.sh
+```
 
 ## Get logs
 

@@ -22,10 +22,16 @@ const s3Client = {
   }),
 };
 
+let deepFryEvents = [];
+
 const lambdaClient = {
   invoke: (event) => ({
     promise: async () => {
       console.log(event);
+      const payload = JSON.parse(event.Payload);
+      if (!payload.error) {
+        deepFryEvents.push(payload);
+      }
     },
   }),
 };
@@ -57,6 +63,11 @@ async function main() {
       lambdaClient,
     });
   }
+
+  await writeFile(
+    path.join(__dirname, "..", "events", "deep_fry_gen.json"),
+    JSON.stringify(deepFryEvents, null, 2)
+  );
 }
 
 main();

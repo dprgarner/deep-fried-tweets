@@ -5,19 +5,17 @@ Lambda to be built.
 
 Usage:
 
-from twitter_py.test import *
-from twitter_py.process_mentions import *
-
-id_=1384831973156339713
-status = twitter_api.get_status(id_)
-process_mention(twitter_api, lambda_client, status)
+from test import *
+scrub_tweets("dank")
 """
 import json
 import tweepy
 
+from process_mentions import to_event, is_reply, is_retweet
 
-with open(".env.json") as f:
-    env = json.load(f)["Parameters"]
+
+with open("../.env.json") as env_file:
+    env = json.load(env_file)["Parameters"]
     auth = tweepy.OAuthHandler(
         env["TWITTER_CONSUMER_KEY"], env["TWITTER_CONSUMER_SECRET"]
     )
@@ -49,3 +47,23 @@ def get_dank_tweets():
         "dank", lang="en", trim_user=False, include_entities=False, count=30
     ):
         yield status
+
+
+def scrub_tweets(search_term):
+    results = twitter_api.search(search_term, lang="en", count=20)
+    events = []
+    for mention in results:
+        if is_reply(mention) and not is_retweet(mention):
+            target = twitter_api.get_status(
+                id=mention.in_reply_to_status_id_str,
+                trim_user=False,
+                include_entities=False,
+            )
+        else:
+            target = mention
+        events.append(to_event(target, mention))
+        if len(events) == 10:
+            break
+
+    with open("../events/screenshot_gen.json", "w") as events_file:
+        json.dump(events, events_file, indent=2)
