@@ -3,6 +3,7 @@ import io
 import json
 import os
 import traceback
+import tweepy
 
 import boto3
 
@@ -19,14 +20,21 @@ twitter_api = get_twitter_api(dynamodb_client)
 lambda_client = boto3.client("lambda")
 
 
-def tweet_apology(id_, screen_name):
+def tweet_nope(id_, screen_name, pm=True, msg="🤖 Beep boop. Something went wrong."):
+    if pm:
+        try:
+            twitter_api.send_direct_message(
+                os.getenv("MAINTAINER_USER_ID"),
+                "Bot error -- status ID: {}".format(id_),
+            )
+        except Exception as e:
+            print("Failed to PM an error report")
+            traceback.print_exc()
+
     try:
         twitter_api.update_status(
-            "@{} {}".format(screen_name, "Bot's broken"),
+            "@{} {}".format(screen_name, msg),
             in_reply_to_status_id=id_,
-        )
-        twitter_api.send_direct_message(
-            os.getenv("MAINTAINER_USER_ID"), "Bot error -- status ID: {}".format(id_)
         )
     except Exception as e:
         print("Failed to tweet apology")
@@ -45,9 +53,17 @@ def process_mentions(_event, _context):
         for mention in get_mentions_since(twitter_api, since_id):
             try:
                 process_mention(twitter_api, lambda_client, dynamodb_client, mention)
+            except tweepy.errors.Forbidden as e:
+                print(e)
+                tweet_nope(
+                    mention.id_str,
+                    mention.user.screen_name,
+                    pm=False,
+                    msg="Can't see that tweet",
+                )
             except Exception as e:
                 traceback.print_exc()
-                tweet_apology(mention.id_str, mention.user.screen_name)
+                tweet_nope(mention.id_str, mention.user.screen_name)
             new_since_id = mention.id_str
     finally:
         set_since_id(dynamodb_client, new_since_id)
@@ -104,8 +120,8 @@ def reply(_event, _context):
             print("Status updated successfully: {}".format(status_response.id_str))
     except Exception as e:
         traceback.print_exc()
-        tweet_apology(_event["mention"]["id"], _event["mention"]["user"]["screen_name"])
+        tweet_nope(_event["mention"]["id"], _event["mention"]["user"]["screen_name"])
 
 
 def apologise(_event, _context):
-    tweet_apology(_event["mention"]["id"], _event["mention"]["user"]["screen_name"])
+    tweet_nope(_event["mention"]["id"], _event["mention"]["user"]["screen_name"])
