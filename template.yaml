@@ -138,8 +138,6 @@ Resources:
             BucketName: !Ref DeepFriedBucket
         - DynamoDBCrudPolicy:
             TableName: !Ref DeepFriedTable
-        - LambdaInvokePolicy:
-            FunctionName: !Ref ApologiseFunction
 
   ApologiseFunction:
     Type: AWS::Serverless::Function

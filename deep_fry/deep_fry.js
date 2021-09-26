@@ -10,7 +10,7 @@ const {
 
 initBulgeFilter();
 
-module.exports = async function applyParams({ canvas, image }, params) {
+module.exports = async function deepFry({ canvas, image }, params) {
   const dankImages = [];
   for (const imageParams of params.images) {
     dankImages.push(await loadDankImage(imageParams));
