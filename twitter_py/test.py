@@ -35,22 +35,21 @@ lambda_client = FakeLambda()
 
 def get_dank_tweets():
     # A list of tweets including a private status.
-    for status in twitter_api.statuses_lookup(
-        ["1383772550254133250", "1383772620114464768", "1383774998226112517"],
+    for status in twitter_api.lookup_statuses(
+        ["1441109206388535304"],
         trim_user=False,
         include_entities=False,
     ):
         yield status
 
     # For testing.
-    for status in twitter_api.search(
+    for status in twitter_api.search_tweets(
         "dank", lang="en", trim_user=False, include_entities=False, count=30
     ):
         yield status
 
 
-def scrub_tweets(search_term):
-    results = twitter_api.search(search_term, lang="en", count=20)
+def tweets_to_events(results):
     events = []
     for mention in results:
         if is_reply(mention) and not is_retweet(mention):
@@ -67,3 +66,8 @@ def scrub_tweets(search_term):
 
     with open("../events/screenshot_gen.json", "w") as events_file:
         json.dump(events, events_file, indent=2)
+
+
+def scrub_tweets(search_term):
+    results = twitter_api.search_tweets(search_term, lang="en", count=20)
+    tweets_to_events(results)
