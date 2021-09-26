@@ -94,6 +94,7 @@ def reply(_event, _context):
                 _event["deep_fried_filename"],
                 image_file,
             )
+            image_file.seek(0)
 
             print("Downloaded deep-fried image. Uploading image to Twitter...")
             uploaded_image = twitter_api.media_upload(
