@@ -77,6 +77,62 @@ async function test() {
       canvas = originalCanvas;
       image = originalImage;
 
+      // const { fabric } = require("fabric");
+      // const { getBulges } = require("./random");
+
+      // const bulges = getBulges(event, canvas);
+      // for (const { x, y, radius } of bulges) {
+      //   canvas.add(
+      //     new fabric.Circle({
+      //       left: x - radius,
+      //       top: y - radius,
+      //       radius,
+      //       fill: "pink",
+      //       // opacity: 0.75,
+      //       opacity: 1,
+      //     })
+      //   );
+      // }
+
+      // for (const { x, y, width, height } of event.bounds.media) {
+      //   canvas.add(
+      //     new fabric.Rect({
+      //       left: x,
+      //       top: y,
+      //       width,
+      //       height,
+      //       fill: "red",
+      //       opacity: 0.5,
+      //     })
+      //   );
+      // }
+      // for (const { x, y, width, height } of event.bounds.text) {
+      //   canvas.add(
+      //     new fabric.Rect({
+      //       left: x,
+      //       top: y,
+      //       width,
+      //       height,
+      //       fill: "green",
+      //       opacity: 0.5,
+      //     })
+      //   );
+      // }
+      // for (const { x, y, width, height } of event.bounds.profile_images) {
+      //   canvas.add(
+      //     new fabric.Rect({
+      //       left: x,
+      //       top: y,
+      //       width,
+      //       height,
+      //       fill: "blue",
+      //       opacity: 0.5,
+      //     })
+      //   );
+      // }
+
+      // canvas.renderAll();
+
       const params = createParams(event, canvas);
       console.log("Parameters:\n ", JSON.stringify(params, null, 2));
 

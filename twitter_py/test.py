@@ -52,7 +52,7 @@ def get_dank_tweets():
 def tweets_to_events(results):
     events = []
     for mention in results:
-        if is_reply(mention) and not is_retweet(mention):
+        if is_reply(mention):
             target = twitter_api.get_status(
                 id=mention.in_reply_to_status_id_str,
                 trim_user=False,
@@ -60,7 +60,8 @@ def tweets_to_events(results):
             )
         else:
             target = mention
-        events.append(to_event(target, mention))
+        if not is_retweet(target):
+            events.append(to_event(target, mention))
         if len(events) == 10:
             break
 
@@ -69,5 +70,5 @@ def tweets_to_events(results):
 
 
 def scrub_tweets(search_term):
-    results = twitter_api.search_tweets(search_term, lang="en", count=20)
+    results = twitter_api.search_tweets(search_term, lang="en", count=10)
     tweets_to_events(results)

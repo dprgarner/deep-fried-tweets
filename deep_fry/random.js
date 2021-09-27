@@ -44,58 +44,117 @@ const countPixels = ({ map, w, h }, { x, y, dh, dw }) => {
   return { totalWhite, totalBlack };
 };
 
-exports.getBulges = (canvas) => {
-  canvas.renderAll();
-  const ctx = canvas.getContext("2d");
+const isIn = (regions, { x, y }) => {
+  for (const region of regions) {
+    if (
+      x > region.x &&
+      x < region.x + region.width &&
+      y > region.y &&
+      y < region.y + region.height
+    ) {
+      return true;
+    }
+  }
+  return false;
+};
+
+const distance = (p1, p2) => Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2);
+
+const getTargetProfile = (profileImages) => {
+  const largeProfileImages = profileImages.filter((image) => image.width > 30);
+  return largeProfileImages[largeProfileImages.length - 1];
+};
+
+exports.getBulges = (event, canvas) => {
   const w = Math.floor(canvas.width);
   const h = Math.floor(canvas.height);
 
-  const dw = 150;
-  const dh = 100;
-  const bulgeRegions = [];
+  // Bulges should be placed on media or Tweet text
+  const bulgeAreas = event.bounds.media.concat(event.bounds.text);
 
-  // Finds some random regions where there's a lot of black pixels.
-  for (let i = 0; i < 6; i++) {
-    const map = ctx.getImageData(0, 0, w, h);
-    let maxBlackCoords;
-    let maxBlackRatio = 0;
-
-    for (let j = 0; j < 100; j++) {
-      const x = Math.floor(dw + Math.random() * (w - 2 * dw));
-      const y = Math.floor(dh + Math.random() * (h - 2 * dh));
-      const { totalBlack } = countPixels({ map, w, h }, { x, y, dw, dh });
-      if (totalBlack >= maxBlackRatio) {
-        maxBlackCoords = { x, y, dw, dh };
-        maxBlackRatio = totalBlack;
-      }
-    }
-
-    bulgeRegions.push(
-      new fabric.Rect({
-        left: maxBlackCoords.x,
-        top: maxBlackCoords.y,
-        width: maxBlackCoords.dw,
-        height: maxBlackCoords.dh,
-        fill: "#aaaaaa",
-        opacity: 1,
-      })
-    );
-    canvas.add(bulgeRegions[bulgeRegions.length - 1]);
-    canvas.renderAll();
-  }
-  const bulges = [];
-  for (const bulgeRegion of bulgeRegions) {
-    canvas.remove(bulgeRegion);
-    bulges.push({
-      x: (bulgeRegion.left - bulgeRegion.width / 2) / w,
-      y: (bulgeRegion.top - bulgeRegion.height / 2) / h,
-      strength: Math.min(1, 0.25 + exports.parabolaish()),
-      radius: 100,
+  const profileBoundPoints = [];
+  // Avoid bulging near profile images that might get sunglasses or laser eyes
+  const profileImage = getTargetProfile(event.bounds.profile_images);
+  if (profileImage) {
+    const profileImageMargin = 10;
+    profileBoundPoints.push({
+      x: profileImage.x - profileImageMargin,
+      y: profileImage.y - profileImageMargin,
+    });
+    profileBoundPoints.push({
+      x: profileImage.x + profileImage.width / 2,
+      y: profileImage.y - profileImageMargin,
+    });
+    profileBoundPoints.push({
+      x: profileImage.x + profileImage.width + profileImageMargin,
+      y: profileImage.y - profileImageMargin,
+    });
+    profileBoundPoints.push({
+      x: profileImage.x + profileImage.width + profileImageMargin,
+      y: profileImage.y + profileImage.height / 2,
+    });
+    profileBoundPoints.push({
+      x: profileImage.x + profileImage.width + profileImageMargin,
+      y: profileImage.y + profileImage.height + profileImageMargin,
+    });
+    profileBoundPoints.push({
+      x: profileImage.x + profileImage.width / 2,
+      y: profileImage.y + profileImage.height + profileImageMargin,
+    });
+    profileBoundPoints.push({
+      x: profileImage.x - profileImageMargin,
+      y: profileImage.y + profileImage.height + profileImageMargin,
+    });
+    profileBoundPoints.push({
+      x: profileImage.x - profileImageMargin,
+      y: profileImage.y + profileImage.height / 2,
     });
   }
 
-  canvas.renderAll();
-  return exports.pickN(bulges, Math.floor(1 + Math.random() * 2));
+  let bulgeCandidates = [];
+
+  const bulgeRadius = 100;
+  // Bulges shouldn't appear too close to the edge
+  const marginX = bulgeRadius;
+  const marginY = bulgeRadius;
+
+  const collidesWithProfile = (p1) => {
+    for (const p2 of profileBoundPoints) {
+      if (distance(p1, p2) < bulgeRadius) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  const collidesWithBulge = (p1) => {
+    for (const p2 of bulgeCandidates) {
+      if (distance(p1, p2) < 2 * bulgeRadius) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  for (let i = 0; i < 100; i++) {
+    const x = Math.random() * (w - 2 * marginX) + marginX;
+    const y = Math.random() * (h - 2 * marginY) + marginY;
+
+    if (!isIn(bulgeAreas, { x, y })) continue;
+    if (collidesWithProfile({ x, y })) continue;
+    if (collidesWithBulge({ x, y })) continue;
+
+    bulgeCandidates.push({
+      x,
+      y,
+      strength: Math.min(1, 0.25 + exports.parabolaish()),
+      radius: 100,
+    });
+
+    if (bulgeCandidates.length > 5) break;
+  }
+
+  return bulgeCandidates;
 };
 
 exports.getImageRegions = (canvas) => {

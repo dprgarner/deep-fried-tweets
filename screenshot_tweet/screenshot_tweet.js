@@ -93,6 +93,32 @@ const getProfileImages = async (iframe) => {
   return profileImages;
 };
 
+const getTweetTextBounds = async (iframe) => {
+  const frameContent = await iframe.contentFrame();
+  const textDivs = await frameContent.$$eval(
+    "div[lang]:not(article article div[lang])",
+    (divs) =>
+      divs.map((div) => {
+        const { x, y, width, height } = div.getBoundingClientRect();
+        return { x, y, width, height };
+      })
+  );
+  return textDivs;
+};
+
+const getTweetMediaBounds = async (iframe) => {
+  const frameContent = await iframe.contentFrame();
+  const textDivs = await frameContent.$$eval(
+    'a[href*="/photo/"],img[src*="thumb/"],img[src*="/card_img"]',
+    (mediaElements) =>
+      mediaElements.map((media) => {
+        const { x, y, width, height } = media.getBoundingClientRect();
+        return { x, y, width, height };
+      })
+  );
+  return textDivs;
+};
+
 const getFilename = (mention_id) =>
   `${new Date().toISOString().replace(/(\.|:)/g, "-")}--${mention_id}.png`;
 
@@ -135,7 +161,12 @@ module.exports = async (event, { browser, s3Client, lambdaClient }) => {
 
     const frame = await waitForIframe(page, event.target.id);
     await trimLinks(frame);
-    const profileImages = await getProfileImages(frame);
+
+    const [profileImages, textBounds, mediaBounds] = await Promise.all([
+      getProfileImages(frame),
+      getTweetTextBounds(frame),
+      getTweetMediaBounds(frame),
+    ]);
 
     console.log("Taking screenshot...");
     const screenshot = await frame.screenshot();
@@ -144,7 +175,15 @@ module.exports = async (event, { browser, s3Client, lambdaClient }) => {
 
     uploadAndDeepFryPromise = (async () => {
       await uploadScreenshot(s3Client, screenshot, filename);
-      const lambdaEvent = { ...event, filename, profile_images: profileImages };
+      const lambdaEvent = {
+        ...event,
+        filename,
+        bounds: {
+          profile_images: profileImages,
+          text: textBounds,
+          media: mediaBounds,
+        },
+      };
       await deepFry(lambdaClient, lambdaEvent);
     })();
   } catch (e) {

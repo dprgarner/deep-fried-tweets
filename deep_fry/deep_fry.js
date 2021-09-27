@@ -23,13 +23,7 @@ module.exports = async function deepFry({ canvas, image }, params) {
 
   if (params.bulges && params.bulges.length) {
     for (const bulge of params.bulges) {
-      image.filters.push(
-        new fabric.Image.filters.Bulge({
-          ...bulge,
-          x: image.width * bulge.x,
-          y: image.height * bulge.y,
-        })
-      );
+      image.filters.push(new fabric.Image.filters.Bulge(bulge));
     }
     image.applyFilters();
   }

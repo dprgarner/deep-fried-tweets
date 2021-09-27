@@ -108,8 +108,7 @@ const washedOut = () => ({
   shouldBulge: true,
 });
 
-const shouldDisplayBulges = () => Math.random() > 0.5;
-const shouldDisplayLaserEyes = () => Math.random() > 0.5;
+const shouldDisplayLaserEyes = () => Math.random() < 0.5;
 
 const getTargetProfile = (profileImages) => {
   const largeProfileImages = profileImages.filter((image) => image.width > 30);
@@ -125,31 +124,26 @@ function createParams(event, canvas) {
     washedOut,
   ])();
 
-  let bulges = params.shouldBulge ? getBulges(canvas) : [];
-  let targetProfile = getTargetProfile(event.profile_images || []);
+  let bulges = params.shouldBulge ? getBulges(event, canvas) : [];
+  let targetProfile = getTargetProfile(event.bounds.profile_images || []);
 
   let profileImages = [];
-  if (bulges.length && targetProfile && !shouldDisplayBulges()) {
-    // Can't show both, it looks broken
-    if (shouldDisplayLaserEyes()) {
-      bulges = [];
-      profileImages = [
-        {
-          ...targetProfile,
-          zoomFactor: 2,
-          filepath: "./img/lasereyes.png",
-        },
-      ];
-    } else {
-      bulges = [];
-      profileImages = [
-        {
-          ...targetProfile,
-          zoomFactor: 1.3,
-          filepath: "./img/dealwithit.png",
-        },
-      ];
-    }
+  if (shouldDisplayLaserEyes()) {
+    profileImages = [
+      {
+        ...targetProfile,
+        zoomFactor: 2,
+        filepath: "./img/lasereyes.png",
+      },
+    ];
+  } else {
+    profileImages = [
+      {
+        ...targetProfile,
+        zoomFactor: 1.3,
+        filepath: "./img/dealwithit.png",
+      },
+    ];
   }
 
   const imageRegions = getImageRegions(canvas);
