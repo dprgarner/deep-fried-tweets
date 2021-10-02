@@ -1,3 +1,4 @@
+from datetime import datetime
 from random import choice
 import io
 import json
@@ -118,7 +119,14 @@ def reply(_event, _context):
                 possibly_sensitive=possibly_sensitive,
             )
 
-            print("Status updated successfully: {}".format(status_response.id_str))
+            reply_time = status_response.created_at
+            mention_time = datetime.fromisoformat(_event["mention"]["created_at"])
+            response_time = (reply_time - mention_time).seconds
+            print(
+                "Status updated successfully in {} seconds: {}".format(
+                    response_time, status_response.id_str
+                )
+            )
     except Exception as e:
         traceback.print_exc()
         tweet_nope(_event["mention"]["id"], _event["mention"]["user"]["screen_name"])

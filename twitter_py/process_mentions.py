@@ -38,6 +38,7 @@ def is_reply(status):
 def _parse_status(status):
     parsed = {
         "id": status.id_str,
+        "created_at": status.created_at.isoformat(),
         "user": {
             "id": status.user.id_str,
             "screen_name": status.user.screen_name,
