@@ -16,6 +16,11 @@ const { bufferToCanvas, canvasToBuffer, clone } = require("./transforms");
 const readFile = promisify(fs.readFile);
 const writeFile = promisify(fs.writeFile);
 
+const yargs = require("yargs/yargs");
+const { hideBin } = require("yargs/helpers");
+const selectMode = require("./select_mode");
+const argv = yargs(hideBin(process.argv)).argv;
+
 const fakeS3Client = {
   getObject: ({ Key }) => ({
     promise: async () => {
@@ -65,19 +70,27 @@ async function test() {
   for (const event of events) {
     console.log("Processing...");
 
-    const inputBuffer = await downloadImage(fakeS3Client, event.filename);
-    let { canvas, image } = await bufferToCanvas(inputBuffer, 0.5);
+    const [light, dark] = await Promise.all([
+      downloadImage(fakeS3Client, event.file.light).then((inputBuffer) =>
+        bufferToCanvas(inputBuffer, 0.5)
+      ),
+      downloadImage(fakeS3Client, event.file.dark).then((inputBuffer) =>
+        bufferToCanvas(inputBuffer, 0.5)
+      ),
+    ]);
+    let { canvas, image, mode } = selectMode(event, light, dark);
 
     const { canvas: originalCanvas, image: originalImage } = await clone({
       canvas,
       image,
     });
+    const repeat = argv.r || argv.repeat || 1;
 
-    for (let i = 0; i < 1; i++) {
+    for (let i = 0; i < repeat; i++) {
       canvas = originalCanvas;
       image = originalImage;
 
-      const params = createParams(event, canvas);
+      const params = createParams(event, canvas, mode);
       console.log("Parameters:\n ", JSON.stringify(params, null, 2));
 
       canvas = await deepFry(
@@ -86,13 +99,16 @@ async function test() {
       );
 
       const outputBuffer = await canvasToBuffer(canvas, 1.5);
-      const deepFriedFilename = `${event.filename.slice(0, -4)}--${i}.png`;
+      const deepFriedFilename = `${event.file[mode].slice(0, -4)}--${i}.png`;
 
       await uploadImage(fakeS3Client, outputBuffer, deepFriedFilename);
 
       await reply(fakeLambdaClient, {
         ...event,
-        deep_fried_filename: deepFriedFilename,
+        file: {
+          ...event.file,
+          fried: deepFriedFilename,
+        },
       });
     }
   }

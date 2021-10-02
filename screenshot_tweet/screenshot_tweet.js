@@ -1,7 +1,9 @@
 const DRY_RUN = process.env.DRY_RUN === "true";
 
-async function navigateToTweet(page, tweetId) {
-  const pageUrl = `data:text/html,<html><body><div id="tweet-container"></div><script src="https://platform.twitter.com/widgets.js" charset="utf-8"></script><script>twttr.widgets.createTweet("${tweetId}", document.getElementById("tweet-container"), { theme: "light", width: 550, dnt: true });</script></body></html>`;
+async function navigateToTweet(page, tweetId, mode) {
+  const pageUrl = `data:text/html,<html><body ${
+    mode === "dark" ? 'style="background-color:black;"' : ""
+  }><div id="tweet-container"></div><script src="https://platform.twitter.com/widgets.js" charset="utf-8"></script><script>twttr.widgets.createTweet("${tweetId}", document.getElementById("tweet-container"), { theme: "${mode}", width: 550, dnt: true });</script></body></html>`;
 
   await page.setViewport({
     width: 600,
@@ -119,8 +121,10 @@ const getTweetMediaBounds = async (iframe) => {
   return textDivs;
 };
 
-const getFilename = (mention_id) =>
-  `${new Date().toISOString().replace(/(\.|:)/g, "-")}--${mention_id}.png`;
+const getFilename = (mentionId, mode) =>
+  `${new Date()
+    .toISOString()
+    .replace(/(\.|:)/g, "-")}--${mentionId}--${mode}.png`;
 
 const uploadScreenshot = (s3Client, screenshot, filename) => {
   console.log("Uploading screenshot to S3:", filename);
@@ -154,30 +158,47 @@ const apologise = (lambdaClient, lambdaEvent) =>
 
 module.exports = async (event, { browser, s3Client, lambdaClient }) => {
   const page = await browser.newPage();
-  let uploadAndDeepFryPromise;
+
+  // Promises are extracted out of the main async/await to minimise the
+  // time spent waiting for external services.
+  let uploadAndDeepFry;
 
   try {
-    await navigateToTweet(page, event.target.id);
+    const uploadScreenshots = [];
+    let frame;
+    for (const mode of ["light", "dark"]) {
+      await navigateToTweet(page, event.target.id, mode);
 
-    const frame = await waitForIframe(page, event.target.id);
-    await trimLinks(frame);
+      frame = await waitForIframe(page, event.target.id);
+      await trimLinks(frame);
 
+      console.log(`Taking ${mode} screenshot...`);
+      const screenshot = await frame.screenshot();
+
+      const filename = getFilename(event.mention.id, mode);
+      uploadScreenshots.push([
+        filename,
+        uploadScreenshot(s3Client, screenshot, filename),
+      ]);
+    }
     const [profileImages, textBounds, mediaBounds] = await Promise.all([
       getProfileImages(frame),
       getTweetTextBounds(frame),
       getTweetMediaBounds(frame),
     ]);
 
-    console.log("Taking screenshot...");
-    const screenshot = await frame.screenshot();
+    uploadAndDeepFry = (async () => {
+      const [[filenameLight, promiseLight], [filenameDark, promiseDark]] =
+        uploadScreenshots;
+      await promiseLight;
+      await promiseDark;
 
-    const filename = getFilename(event.mention.id);
-
-    uploadAndDeepFryPromise = (async () => {
-      await uploadScreenshot(s3Client, screenshot, filename);
       const lambdaEvent = {
         ...event,
-        filename,
+        file: {
+          light: filenameLight,
+          dark: filenameDark,
+        },
         bounds: {
           profile_images: profileImages,
           text: textBounds,
@@ -198,9 +219,8 @@ module.exports = async (event, { browser, s3Client, lambdaClient }) => {
     }
   } finally {
     const browserClosePromise = browser.close();
-
-    if (uploadAndDeepFryPromise) {
-      await uploadAndDeepFryPromise;
+    if (uploadAndDeepFry) {
+      await uploadAndDeepFry;
     }
     await browserClosePromise;
     console.log("Browser closed.");

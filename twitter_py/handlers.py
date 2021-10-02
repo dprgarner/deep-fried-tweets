@@ -91,14 +91,14 @@ def reply(_event, _context):
             print("Downloading deep-fried image...")
             s3_client.download_fileobj(
                 os.getenv("BUCKET_NAME"),
-                _event["deep_fried_filename"],
+                _event["file"]["fried"],
                 image_file,
             )
             image_file.seek(0)
 
             print("Downloaded deep-fried image. Uploading image to Twitter...")
             uploaded_image = twitter_api.media_upload(
-                filename=_event["deep_fried_filename"],
+                filename=_event["file"]["fried"],
                 file=image_file,
                 chunked=True,
             )

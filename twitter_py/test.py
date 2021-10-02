@@ -70,5 +70,5 @@ def tweets_to_events(results):
 
 
 def scrub_tweets(search_term):
-    results = twitter_api.search_tweets(search_term, lang="en", count=10)
+    results = twitter_api.search_tweets(search_term, lang="en", count=20)
     tweets_to_events(results)

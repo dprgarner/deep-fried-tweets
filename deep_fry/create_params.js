@@ -6,6 +6,7 @@ const {
   getBulges,
 } = require("./random");
 
+// Better on lighter images.
 const rainbowSparkle = () => ({
   type: "rainbowSparkle",
   brightness: 0.05 + parabolaish() * 0.2,
@@ -27,6 +28,7 @@ const rainbowSparkle = () => ({
   shouldBulge: true,
 });
 
+// Okay on lighter images, but not amazing: bit too reddish.
 const superSaturated = () => ({
   type: "superSaturated",
   brightness: 0.1 + parabolaish() * 0.4,
@@ -47,6 +49,7 @@ const superSaturated = () => ({
   shouldBulge: true,
 });
 
+// Feels more glitchy than deep-fried
 const madSharpen = () => ({
   type: "madSharpen",
   noise: 0,
@@ -66,13 +69,14 @@ const madSharpen = () => ({
   shouldBulge: false,
 });
 
+// Works well on images. But often feels like Mexico-bot.
 const noisy = () => ({
   type: "noisy",
   brightness: 0.15,
   noise: 75 + parabolaish() * 50,
   redBlend: 0.15 + parabolaish() * 0.5,
   yellowBlend: 0.1,
-  redGamma: 0 + Math.pow(Math.random(), 2),
+  redGamma: 0.2 + Math.pow(Math.random(), 2),
   yellowGamma: 0 + Math.pow(Math.random(), 3),
   preJpeg: {
     iterations: 8,
@@ -86,6 +90,7 @@ const noisy = () => ({
   shouldBulge: true,
 });
 
+// Absolutely destroys images.
 const washedOut = () => ({
   type: "washedOut",
   brightness: parabolaish() * 0.2,
@@ -108,49 +113,76 @@ const washedOut = () => ({
   shouldBulge: true,
 });
 
-const shouldDisplayLaserEyes = () => Math.random() < 0.5;
+const chooseBaseParams = (mode, hasMedia) => {
+  if (mode === "dark" && hasMedia) {
+    return pick([madSharpen, noisy, noisy])();
+  } else if (mode === "dark" && !hasMedia) {
+    return pick([rainbowSparkle, superSaturated, madSharpen, noisy])();
+  } else if (mode == "light" && hasMedia) {
+    return pick([rainbowSparkle, superSaturated, madSharpen, noisy, noisy])();
+  } else if (mode == "light" && !hasMedia) {
+    return pick([
+      noisy,
+      rainbowSparkle,
+      rainbowSparkle,
+      superSaturated,
+      superSaturated,
+      madSharpen,
+      madSharpen,
+      washedOut,
+      washedOut,
+    ])();
+  }
+};
+
+const chooseProfileImage = (targetProfile) => {
+  const profileImages = [];
+  if (!targetProfile) return [];
+
+  if (Math.random() < 0.5) {
+    profileImages.push({
+      ...targetProfile,
+      zoomFactor: 2,
+      filepath: "./img/lasereyes.png",
+    });
+  } else {
+    profileImages.push({
+      ...targetProfile,
+      zoomFactor: 1.3,
+      filepath: "./img/dealwithit.png",
+    });
+  }
+
+  if (Math.random() < 0.25) {
+    profileImages.push({
+      ...targetProfile,
+      zoomFactor: 1.75,
+      filepath: "./img/joint.png",
+    });
+  }
+
+  return profileImages;
+};
 
 const getTargetProfile = (profileImages) => {
   const largeProfileImages = profileImages.filter((image) => image.width > 30);
   return largeProfileImages[largeProfileImages.length - 1];
 };
 
-function createParams(event, canvas) {
-  const params = pick([
-    rainbowSparkle,
-    superSaturated,
-    madSharpen,
-    noisy,
-    washedOut,
-  ])();
+function createParams(event, canvas, mode) {
+  const params = chooseBaseParams(mode, !!event.bounds.media);
 
   let bulges = params.shouldBulge ? getBulges(event, canvas) : [];
   let targetProfile = getTargetProfile(event.bounds.profile_images || []);
 
-  let profileImages = [];
-  if (shouldDisplayLaserEyes()) {
-    profileImages = [
-      {
-        ...targetProfile,
-        zoomFactor: 2,
-        filepath: "./img/lasereyes.png",
-      },
-    ];
-  } else {
-    profileImages = [
-      {
-        ...targetProfile,
-        zoomFactor: 1.3,
-        filepath: "./img/dealwithit.png",
-      },
-    ];
-  }
+  const profileImages = chooseProfileImage(targetProfile);
 
   const imageRegions = getImageRegions(canvas);
   const images = getImages(imageRegions, params);
 
   return {
     ...params,
+    mode,
     saucy: !!(
       event.mention.possibly_sensitive || event.target.possibly_sensitive
     ),
