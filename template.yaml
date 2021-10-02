@@ -65,7 +65,7 @@ Resources:
       CodeUri: screenshot_tweet/
       Handler: handler.handler
       Runtime: nodejs14.x
-      Timeout: 20
+      Timeout: 30
       MemorySize: 512
       Environment:
         Variables:

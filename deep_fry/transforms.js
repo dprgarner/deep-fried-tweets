@@ -2,22 +2,25 @@ const fs = require("fs");
 const path = require("path");
 const { fabric } = require("fabric");
 const { promisify } = require("util");
+const { Image: CanvasImage } = require("canvas");
 
 const readFile = promisify(fs.readFile);
 
-exports.bufferToDataUri = (buffer) =>
-  `data:image/png;base64,${buffer.toString("base64")}`;
-
-exports.dataUriToImage = (dataUri) =>
-  new Promise((res) => {
-    fabric.Image.fromURL(dataUri, (img) => {
-      res(img);
-    });
+exports.bufferToImage = async (buffer) => {
+  const imageElement = await new Promise((res, rej) => {
+    const img = new CanvasImage();
+    img.onload = () => res(img);
+    img.onerror = (err) => rej(err);
+    img.src = buffer;
   });
+  const image = new fabric.Image(imageElement);
+
+  return image;
+};
 
 exports.pathToImage = async (filepath) => {
   const buffer = await readFile(path.join(__dirname, filepath));
-  const image = await exports.dataUriToImage(exports.bufferToDataUri(buffer));
+  const image = await exports.bufferToImage(buffer);
   return image;
 };
 
@@ -31,8 +34,7 @@ exports.imageToCanvas = (image, scaleFactor) => {
 };
 
 exports.bufferToCanvas = async (inputBuffer, scaleFactor) => {
-  const dataUri = exports.bufferToDataUri(inputBuffer);
-  let image = await exports.dataUriToImage(dataUri);
+  const image = await exports.bufferToImage(inputBuffer);
   let canvas = exports.imageToCanvas(image, scaleFactor);
   return { canvas, image };
 };
@@ -57,7 +59,13 @@ exports.jpegify = async (canvas, quality) => {
     format: "jpeg",
     quality,
   });
-  const image = await exports.dataUriToImage(dataUri);
+
+  const image = await new Promise((res) => {
+    fabric.Image.fromURL(dataUri, (img) => {
+      res(img);
+    });
+  });
+
   canvas.clear();
   canvas.add(image);
 
