@@ -13,3 +13,4 @@ deep_fry/img/maybe
 events/*
 lib
 samconfig.toml
+*.pyc

@@ -85,12 +85,10 @@ const getProfileImages = async (iframe) => {
   const profileImages = await frameContent.$$eval(
     'img[src*="profile_images"]',
     (imgs) =>
-      imgs.map((img) => ({
-        x: img.x,
-        y: img.y,
-        width: img.width,
-        height: img.height,
-      }))
+      imgs.map((img) => {
+        const { x, y, width, height } = img.getBoundingClientRect();
+        return { x, y, width, height };
+      })
   );
   return profileImages;
 };
